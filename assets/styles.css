@@ -195,3 +195,13 @@ html, body {
     padding-right: 20px !important;
     font-size: 18px;
 }
+
+.fa-minus-circle {
+    color: #000000;
+    font-size: 1.2em;
+    transition: color 0.3s ease;
+}
+
+.fa-minus-circle:hover {
+    color: #000000;
+}

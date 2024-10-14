@@ -53,7 +53,7 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
 
 def extract_saxs_data(item):
     try:
-        exp_saxs = item['props']['children'][0]['props']['contents']
+        exp_saxs = item['props']['children'][0]['props']['children'][0]['props']['contents']
         ligand_concentration = item['props']['children'][1]['props']['value']
         return exp_saxs, ligand_concentration
     except KeyError as e:

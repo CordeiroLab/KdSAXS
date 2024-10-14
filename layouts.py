@@ -27,15 +27,21 @@ def create_saxs_upload_section():
         ], className="centered-bold-text"),
         html.Div(id='saxs-upload-container', children=[
             html.Div([
-                dcc.Upload(
-                    id={'type': 'upload-exp-saxs', 'index': 0},
-                    children=html.Div([
-                        'Drag and Drop or ',
-                        html.A('Select Experimental SAXS File')
-                    ]),
-                    className="upload-style",
-                    multiple=False
-                ),
+                html.Div([
+                    dcc.Upload(
+                        id={'type': 'upload-exp-saxs', 'index': 0},
+                        children=html.Div([
+                            'Drag and Drop or ',
+                            html.A('Select Experimental SAXS File')
+                        ]),
+                        className="upload-style",
+                        multiple=False
+                    ),
+                    html.I(className="fas fa-minus-circle", 
+                           id={'type': 'delete-saxs', 'index': 0},
+                           n_clicks=0,
+                           style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
+                ], style={'position': 'relative'}),
                 dcc.Input(
                     id={'type': 'input-concentration', 'index': 0},
                     type='number',
@@ -44,7 +50,7 @@ def create_saxs_upload_section():
                     min=0,
                     step=0.1,
                     className="input-style"
-                ),
+                )
             ])
         ]),
         html.Button('Add another SAXS profile', id='add-saxs-button', n_clicks=0, className='dash-button'),

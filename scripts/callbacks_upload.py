@@ -1,7 +1,8 @@
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 from dash import html, dcc
 import dash
 import dash_bootstrap_components as dbc
+import json
 
 
 def register_callbacks_upload(app):
@@ -12,16 +13,31 @@ def register_callbacks_upload(app):
         [State('saxs-upload-container', 'children')]
     )
     def add_saxs_input(n_clicks, children):
+        print(f"Add button clicked. n_clicks: {n_clicks}")
+        print(f"Current number of children: {len(children)}")
+        
+        if n_clicks is None:
+            print("n_clicks is None, returning no update")
+            return dash.no_update
+        
+        new_index = len(children) + 1
+        print(f"Creating new upload with index: {new_index}")
+        
         new_upload = html.Div([
-            dcc.Upload(
-                id={'type': 'upload-exp-saxs', 'index': n_clicks + 1},
-                children=html.Div(['Drag and Drop or Select Experimental SAXS File']),
-                className='upload-style',
-                multiple=False
-            ),
-            
+            html.Div([
+                dcc.Upload(
+                    id={'type': 'upload-exp-saxs', 'index': new_index},
+                    children=html.Div(['Drag and Drop or Select Experimental SAXS File']),
+                    className='upload-style',
+                    multiple=False
+                ),
+                html.I(className="fas fa-minus-circle", 
+                       id={'type': 'delete-saxs', 'index': new_index},
+                       n_clicks=0,
+                       style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
+            ], style={'position': 'relative'}),
             dcc.Input(
-                id={'type': 'input-concentration', 'index': n_clicks + 1},
+                id={'type': 'input-concentration', 'index': new_index},
                 type='number',
                 placeholder='Concentration',
                 value=None,
@@ -31,6 +47,7 @@ def register_callbacks_upload(app):
             )
         ])
         children.append(new_upload)
+        print(f"New number of children: {len(children)}")
         return children
 
     @app.callback(
@@ -109,3 +126,40 @@ def register_callbacks_upload(app):
         if filename:
             return html.Div(filename)
         return html.Div(['Drag and Drop or Select Theoretical SAXS File'])
+
+    @app.callback(
+        Output('saxs-upload-container', 'children', allow_duplicate=True),
+        [Input({'type': 'delete-saxs', 'index': ALL}, 'n_clicks')],
+        [State('saxs-upload-container', 'children')],
+        prevent_initial_call=True
+    )
+    def delete_saxs_input(n_clicks, children):
+        ctx = dash.callback_context
+        if not ctx.triggered or not any(n_clicks):
+            return dash.no_update
+        
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        index_to_delete = json.loads(button_id)['index']
+        
+        print(f"Deleting index: {index_to_delete}")
+        for child in children:
+            print(f"Child id: {child['props']['children'][0]['props']['children'][0]['props']['id']}")
+        
+        updated_children = [
+            child for child in children 
+            if child['props']['children'][0]['props']['children'][0]['props']['id']['index'] != index_to_delete
+        ]
+        
+        # Update indices
+        for i, child in enumerate(updated_children, start=1):
+            for component in child['props']['children']:
+                if isinstance(component, dict) and 'props' in component and 'children' in component['props']:
+                    for subcomponent in component['props']['children']:
+                        if isinstance(subcomponent, dict) and 'props' in subcomponent and 'id' in subcomponent['props']:
+                            subcomponent['props']['id']['index'] = i
+        
+        return updated_children
+
+
+
+
