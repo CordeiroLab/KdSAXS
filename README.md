@@ -11,7 +11,7 @@ KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scatt
 Install the dependencies:
 
 ```
-pip install dash dash-bootstrap-components plotly numpy pandas scipy
+pip install -r requirements.txt
 ```
 
 Download this repository to your computer and execute in a terminal:
@@ -28,6 +28,8 @@ Or alternatively clone this repository:
 
 Open your web browser and go to http://127.0.0.1:8050/
 
+**Note**: Ensure that you have the ATSAS software installed and the path to the ATSAS binaries is correctly set in the `config.py` file.
+
 
 ## 💻 How can I use KdSAXS?
 - Follow the instructions on the webapp.
@@ -43,9 +45,6 @@ Open your web browser and go to http://127.0.0.1:8050/
 - When you click on a Kd value in the χ² vs Kd plot the molecular fractions are displayed at the right side plot.
 
 - The inputed concentrations, choosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units.
-
-
-    - **Note**: Ensure that you have the ATSAS software installed and properly configured on your system
 
 - For more detailed information on input file formats and interpretation of results, please refer to the 'Detailed usage' section below.
 
