@@ -4,7 +4,9 @@
 
 ## 💡 What is KdSAXS?
 
-KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) [1](#ref1)
+KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) 
+
+<!-- [1](#ref1) -->
 
 ## 🧰 How do I install KdSAXS?
 
@@ -147,10 +149,10 @@ Open your web browser and go to http://127.0.0.1:8050/
 
 
 
-## 🔎 How does KdSAXS work?
+<!-- ## 🔎 How does KdSAXS work?
 A general overview of KdSAXS, descriptions of employed methods and applications can be found in the KdSAXS paper:
 
-    PAPER
+    PAPER -->
 
 
 # 🗨️ Citation and Publications
@@ -165,8 +167,13 @@ If you use KdSAXS, please cite its original publication:
 We would like to thank....
 
 
-# 📖 References
+<!-- # 📖 References
 
 example
 
-<a id="ref1">[1]</a> J. Jumper, R. Evans, A. Pritzel et al., "Highly accurate protein structure prediction with AlphaFold," *Nature*, vol. 596, pp. 583–589, 2021. [[Link](https://doi.org/10.1038/s41586-021-03819-2)]
+<a id="ref1">[1]</a> J. Jumper, R. Evans, A. Pritzel et al., "Highly accurate protein structure prediction with AlphaFold," *Nature*, vol. 596, pp. 583–589, 2021. [[Link](https://doi.org/10.1038/s41586-021-03819-2)] -->
+
+
+# ✍️ Authors
+
+Tiago Lopes Gomes ([GitHub](https://github.com/tiagolopesgomes))

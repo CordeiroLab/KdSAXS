@@ -30,10 +30,7 @@ def create_saxs_upload_section():
                 html.Div([
                     dcc.Upload(
                         id={'type': 'upload-exp-saxs', 'index': 0},
-                        children=html.Div([
-                            'Drag and Drop or ',
-                            html.A('Select Experimental SAXS File')
-                        ]),
+                        children=html.Div(['Drag and Drop or Select Experimental SAXS File']),
                         className="upload-style",
                         multiple=False
                     ),
@@ -41,7 +38,7 @@ def create_saxs_upload_section():
                            id={'type': 'delete-saxs', 'index': 0},
                            n_clicks=0,
                            style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
-                ], style={'position': 'relative'}),
+                ], style={'position': 'relative', 'flex': '1', 'marginRight': '10px'}),
                 dcc.Input(
                     id={'type': 'input-concentration', 'index': 0},
                     type='number',
@@ -51,7 +48,7 @@ def create_saxs_upload_section():
                     step=0.1,
                     className="input-style"
                 )
-            ])
+            ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         ]),
         html.Button('Add another SAXS profile', id='add-saxs-button', n_clicks=0, className='dash-button'),
     ], className="section-frame section-frame-1")
@@ -62,7 +59,21 @@ def create_theoretical_saxs_section():
             "3) Upload theoretical SAXS profiles:",
             html.Sup(html.I(className="fas fa-info-circle", id="theo-saxs-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
-        html.Div(id='theoretical-saxs-upload-container'),
+        html.Div(id='theoretical-saxs-upload-container', children=[
+            dcc.Upload(
+                id={'type': 'upload-theoretical-saxs', 'index': 0},
+                children=html.Div(['Drag and Drop or Select Monomer SAXS File']),
+                className='upload-style',
+                multiple=False
+            ),
+            dcc.Upload(
+                id={'type': 'upload-theoretical-saxs', 'index': 1},
+                children=html.Div(['Drag and Drop or Select oligomer SAXS File']),
+                className='upload-style',
+                multiple=False
+            )
+        ]),
+        html.Div(id='example-file-display')  # New div to display the example file name
     ], className="section-frame section-frame-2")
 
 def create_kd_selection_section():
@@ -135,57 +146,67 @@ def create_instructions():
                 "equilibria to fit your experimental data. When you click on a Kd value in the chi2 vs Kd plot the molecular fractions are displayed at the right side plot."
             ]),
             html.Li("The inputed concentrations, choosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
+            # html.Li([
+            #     "To see how the app works, you can ",
+            #     html.Button("load an example", id="load-example", n_clicks=0, style={'cursor': 'pointer'}),
+            #     " dataset."
+            # ]),
+
             html.Li([
-                "To see how the app works, you can load an ",
-                html.A("example", id="load-example", href="#", style={'cursor': 'pointer'}),
-                " dataset."
+                "To see how the app works, you can load the example data in the github repository ",
+                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/blg/", target="_blank"),
+                "."
             ]),
         ]),
     ], className="info-section")
+
+def create_model_selection_tab():
+    return dbc.Card(dbc.CardBody([
+        create_model_selection()
+    ]))
+
+def create_experimental_saxs_tab():
+    return dbc.Card(dbc.CardBody([
+        create_saxs_upload_section()
+    ]))
+
+def create_theoretical_saxs_tab():
+    return dbc.Card(dbc.CardBody([
+        create_theoretical_saxs_section()
+    ]))
+
+def create_analysis_parameters_tab():
+    return dbc.Card(dbc.CardBody([
+        create_kd_selection_section()
+    ]))
+
+def create_info_tab():
+    return dbc.Card(dbc.CardBody([
+        create_instructions()
+    ]))
 
 def create_main_layout():
     return html.Div([
         html.H1("KdSAXS - analysing binding equilibria with SAXS data using ensemble models"),
         html.Br(),
-        html.Br(),
+        dbc.Tabs([
+            dbc.Tab(create_info_tab(), label="Instructions"),
+            dbc.Tab(create_model_selection_tab(), label="Model Selection"),
+            dbc.Tab(create_experimental_saxs_tab(), label="Experimental SAXS"),
+            dbc.Tab(create_theoretical_saxs_tab(), label="Theoretical SAXS"),
+            dbc.Tab(create_analysis_parameters_tab(), label="Run analysis"),
+        ]),
         html.Div([
-            # Left Column: Model Selection, Uploads, and Controls
-            html.Div([
-                create_model_selection(),
-                create_saxs_upload_section(),
-                create_theoretical_saxs_section(),
-                create_kd_selection_section(),
-                html.Div(id='output-data-upload'),
-            ], 
-            style={'width': '40%', 'verticalAlign': 'top', 'padding': '20px'}),
-
-            # Right Column: LaTeX Formula, Plots
-            html.Div([
-                create_instructions(),
-                # Div for LaTeX formula
-                #html.Div(id='latex-formula-container', className='info-section'),
-                
-                html.Div([
-                    html.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='dash-button', style={'margin-right': '10px'}),
-                    html.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='dash-button'),
-                    html.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='dash-button', style={'margin-right': '10px'}),
-                    html.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='dash-button'),
-                ], style={'display': 'flex', 'justify-content': 'flex-end', 'margin-bottom': '20px'}),
-
-                html.Div([
-                    html.Div([
-                        dcc.Graph(id='chi2-plot', style={'height': '400px'})
-                    ], style={'width': '50%', 'display': 'inline-block', 'verticalalign': 'top'}),
-                    html.Div([
-                        dcc.Graph(id='fraction-plot', style={'height': '400px'})
-                    ], style={'width': '50%', 'display': 'inline-block', 'verticalalign': 'top'})
-                ], style={'width': '100%', 'display': 'flex'}),
-
-                html.Div([
-                    html.Div(id='saxs-fit-plots')
-                ], style={'width': '100%', 'marginTop': '20px'})
-            ], style={'width': '60%', 'display': 'inline-block', 'verticalalign': 'top'}),
-        ], style={'display': 'flex'}),
+            html.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='dash-button', style={'margin-right': '10px'}),
+            html.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='dash-button'),
+            html.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='dash-button', style={'margin-right': '10px'}),
+            html.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='dash-button'),
+        ], style={'display': 'flex', 'justify-content': 'flex-end', 'margin-top': '20px', 'margin-bottom': '20px'}),
+        html.Div([
+            dcc.Graph(id='chi2-plot', style={'height': '400px', 'width': '50%', 'display': 'inline-block'}),
+            dcc.Graph(id='fraction-plot', style={'height': '400px', 'width': '50%', 'display': 'inline-block'})
+        ]),
+        html.Div(id='saxs-fit-plots', style={'width': '100%', 'marginTop': '20px'}),
         dcc.Store(id='message-trigger', storage_type='memory'),
         dcc.Store(id='example-data-store'),
         dbc.Modal(
@@ -203,5 +224,4 @@ def create_main_layout():
         dcc.Download(id="download-chi2-pdf"),
         dcc.Download(id="download-fraction-csv"),
         dcc.Download(id="download-fraction-pdf"),
-        
     ])

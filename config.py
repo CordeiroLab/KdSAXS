@@ -24,8 +24,7 @@ CONCENTRATION_POINTS = 50
 # ATSAS configuration
 ATSAS_PATH = "/Users/tiago/ATSAS-3.2.1-1/bin/"
 
-# Add this to config.py
-
+# example data paths
 EXAMPLE_DATA = {
     'model': 'kds_saxs_mon_oligomer',
     'experimental_saxs': [

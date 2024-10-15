@@ -19,3 +19,10 @@ def uploaded_files(directory):
         if os.path.isfile(path):
             files.append(filename)
     return files
+
+def truncate_filename(filename, max_length=50):
+    if len(filename) <= max_length:
+        return filename
+    name, extension = os.path.splitext(filename)
+    truncated = name[:max_length-3-len(extension)] + '...' + extension
+    return truncated

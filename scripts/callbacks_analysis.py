@@ -13,6 +13,8 @@ import plotly.io as pio
 import io
 import time
 from dash.exceptions import PreventUpdate
+import os
+from config import ATSAS_PATH
 
 
 def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration):
@@ -115,6 +117,11 @@ def register_callbacks_analysis(app, upload_directory):
                             kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration):
         if n_clicks is None:
             return no_update, go.Figure(), go.Figure(), html.Div()
+
+        # Check if ATSAS_PATH exists
+        if not os.path.exists(ATSAS_PATH):
+            error_message = f"Error: ATSAS path '{ATSAS_PATH}' does not exist. Please check the ATSAS_PATH in config.py and ensure it points to the correct location."
+            return {'message': error_message, 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
 
         if None in [kd_min, kd_max, kd_points, conc_min, conc_max, conc_points]:
             return {'message': 'Please fill in all Kd and concentration fields.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update

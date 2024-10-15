@@ -4,7 +4,7 @@
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f7f8fa;
-    margin: 10%;
+    margin: 25%;
     margin-top: 1%;
     padding: 0;
 }
@@ -204,4 +204,45 @@ html, body {
 
 .fa-minus-circle:hover {
     color: #000000;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 15px;
+}
+
+.card {
+    border: none;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .plot-container > div {
+        width: 100%;
+    }
+
+    #saxs-upload-container > div {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #saxs-upload-container .upload-style {
+        margin-bottom: 10px;
+    }
+
+    #saxs-upload-container .input-style {
+        width: 100%;
+    }
+}
+
+.truncated-filename {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

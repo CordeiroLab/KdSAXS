@@ -3,6 +3,7 @@ from dash import html, dcc
 import dash
 import dash_bootstrap_components as dbc
 import json
+from scripts.utils import truncate_filename
 
 
 def register_callbacks_upload(app):
@@ -35,7 +36,7 @@ def register_callbacks_upload(app):
                        id={'type': 'delete-saxs', 'index': new_index},
                        n_clicks=0,
                        style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
-            ], style={'position': 'relative'}),
+            ], style={'position': 'relative', 'flex': '1', 'marginRight': '10px'}),
             dcc.Input(
                 id={'type': 'input-concentration', 'index': new_index},
                 type='number',
@@ -45,7 +46,7 @@ def register_callbacks_upload(app):
                 step=0.1,
                 className='input-style'
             )
-        ])
+        ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         children.append(new_upload)
         print(f"New number of children: {len(children)}")
         return children
@@ -56,7 +57,10 @@ def register_callbacks_upload(app):
     )
     def update_exp_saxs_filename(filename):
         if filename:
-            return html.Div(filename)
+            truncated = truncate_filename(filename)
+            return html.Div([
+                html.Span(truncated, className='truncated-filename', title=filename)
+            ])
         return html.Div(['Drag and Drop or Select Experimental SAXS File'])
 
     @app.callback(
@@ -124,7 +128,10 @@ def register_callbacks_upload(app):
     )
     def update_theoretical_saxs_filename(filename):
         if filename:
-            return html.Div(filename)
+            truncated = truncate_filename(filename)
+            return html.Div([
+                html.Span(truncated, className='truncated-filename', title=filename)
+            ])
         return html.Div(['Drag and Drop or Select Theoretical SAXS File'])
 
     @app.callback(
