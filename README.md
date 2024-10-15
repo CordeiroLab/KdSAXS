@@ -1,6 +1,7 @@
 # KdSAXS: A tool to analyse binding equilibria with SAXS data using ensemble models
 
-<img src="assets/KdSAXS.png" width="80%"/>
+<img src="assets/KdSAXS.png" width="80%"/><img src="assets/KdSAXS_2.png" width="80%"/>
+
 
 ## 💡 What is KdSAXS?
 

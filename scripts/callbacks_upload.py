@@ -93,6 +93,9 @@ def register_callbacks_upload(app):
 
     
     def update_theoretical_saxs_uploads(selected_model, n_value):
+        print(f"selected_model: {selected_model}")
+        print(f"n_value: {n_value}")
+
         if selected_model == 'kds_saxs_oligomer_fitting' and n_value is not None:
             uploads = []
             for i in range(n_value + 2):
@@ -108,13 +111,13 @@ def register_callbacks_upload(app):
             return [
                 dcc.Upload(
                     id={'type': 'upload-theoretical-saxs', 'index': 0},
-                    children=html.Div(['Drag and Drop or Select Monomer SAXS File']),
+                    children=html.Div(['Drag and Drop or Select Monomeric SAXS File']),
                     className='upload-style',
                     multiple=False
                 ),
                 dcc.Upload(
                     id={'type': 'upload-theoretical-saxs', 'index': 1},
-                    children=html.Div(['Drag and Drop or Select oligomer SAXS File']),
+                    children=html.Div(['Drag and Drop or Select Oligomeric SAXS File']),
                     className='upload-style',
                     multiple=False
                 )
