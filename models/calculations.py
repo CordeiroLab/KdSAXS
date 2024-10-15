@@ -1,15 +1,18 @@
 # models/calculations.py
+import os
 import numpy as np
 import pandas as pd
 from scipy.optimize import fsolve
 import subprocess
 import re
-from config import KD_RANGE, KD_POINTS, ATSAS_PATH
+from config import KD_RANGE, KD_POINTS, ATSAS_PATH, LOG_DIRECTORY
 from scripts.error_handling import logger
 
 def extract_chi_squared(log_file_path):
-  
     try:
+        # Ensure the log directory exists
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+        
         with open(log_file_path, 'r') as file:
             log_content = file.read()
 
@@ -76,15 +79,18 @@ class MonomerOligomerCalculation:
                     # Save the summed intensity file for use with oligomer
                     np.savetxt(f"./output_data/theoretical_{Kd}.int", theoretical_sum_int)
         
+                    # Ensure log directory exists
+                    os.makedirs(LOG_DIRECTORY, exist_ok=True)
+        
                     # System call to oligomer to calculate chi-squared to the experimental data
-                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{concentration}_{Kd}.fit --out=./logs/oligomer.log -cst -ws -un=2"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{concentration}_{Kd}.fit --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')} -cst -ws -un=2"
                     cmd = cmd.replace('\0', '')  # because of \ in pathname
         
                     print(cmd)
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         
                     # Parse the output from oligomer to retrieve the chi-squared value
-                    chi_squared = extract_chi_squared('./logs/oligomer.log')
+                    chi_squared = extract_chi_squared(os.path.join(LOG_DIRECTORY, 'oligomer.log'))
         
                     print(f"For Kd={Kd} uM  X2={chi_squared}")
                     
@@ -187,14 +193,17 @@ class ProteinBindingCalculation:
                     # Save the resulting theoretical SAXS file
                     np.savetxt(f"./output_data/theoretical_{Kd}.int", theoretical_saxs)
 
+                    # Ensure log directory exists
+                    os.makedirs(LOG_DIRECTORY, exist_ok=True)
+
                     # Run ATSAS oligomer tool to calculate chi-squared
-                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{ligand_concentration}_{Kd}.fit  --out=./logs/oligomer.log  -cst -ws -un=1"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{ligand_concentration}_{Kd}.fit  --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')}  -cst -ws -un=1"
                     cmd = cmd.replace('\0', '')  # because of \ in pathname
 
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
                     # Parse the log file for chi-squared value
-                    chi_squared = extract_chi_squared('./logs/oligomer.log')
+                    chi_squared = extract_chi_squared(os.path.join(LOG_DIRECTORY, 'oligomer.log'))
 
                     chi_squared_values.append((Kd, ligand_concentration, *receptor_fracs, ligand_free_frac, sum(receptor_fracs) + ligand_free_frac, chi_squared))
 

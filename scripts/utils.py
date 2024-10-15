@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 
 def save_file(name, content, directory):
     """Decode and store a file uploaded with Plotly Dash."""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     data = content.encode("utf8").split(b";base64,")[1]
     file_path = os.path.join(directory, name)
     with open(file_path, "wb") as fp:
