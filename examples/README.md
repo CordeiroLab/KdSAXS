@@ -1,5 +1,7 @@
 ## Loading example data
 
+Go to blg folder and upload the files below for the Beta-lactoglobulin at pH 8.
+
 ### Experimental SAXS data
 
 Blac_1_16_Blac_1_subtraction_0.7_mgml_sample_Blac_1_160000-integrate_subtracted_gunier.dat @ 38 uM

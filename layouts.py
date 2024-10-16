@@ -38,7 +38,7 @@ def create_saxs_upload_section():
                            id={'type': 'delete-saxs', 'index': 0},
                            n_clicks=0,
                            style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
-                ], style={'position': 'relative', 'flex': '1', 'marginRight': '10px'}),
+                ], style={'position': 'relative', 'flex': '3', 'marginRight': '10px'}),
                 dcc.Input(
                     id={'type': 'input-concentration', 'index': 0},
                     type='number',
@@ -46,7 +46,8 @@ def create_saxs_upload_section():
                     value=None,
                     min=0,
                     step=0.1,
-                    className="input-style"
+                    className="input-style",
+                    style={'flex': '1'}
                 )
             ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         ]),
@@ -154,7 +155,7 @@ def create_instructions():
 
             html.Li([
                 "To see how the app works, you can load the example data in the github repository ",
-                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/blg/", target="_blank"),
+                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/", target="_blank"),
                 "."
             ]),
         ]),
@@ -187,41 +188,48 @@ def create_info_tab():
 
 def create_main_layout():
     return html.Div([
-        html.H1("KdSAXS - analysing binding equilibria with SAXS data using ensemble models"),
-        html.Br(),
-        dbc.Tabs([
-            dbc.Tab(create_info_tab(), label="Instructions"),
-            dbc.Tab(create_model_selection_tab(), label="Model Selection"),
-            dbc.Tab(create_experimental_saxs_tab(), label="Experimental SAXS"),
-            dbc.Tab(create_theoretical_saxs_tab(), label="Theoretical SAXS"),
-            dbc.Tab(create_analysis_parameters_tab(), label="Run analysis"),
-        ]),
-        html.Div([
-            html.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='dash-button', style={'margin-right': '10px'}),
-            html.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='dash-button'),
-            html.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='dash-button', style={'margin-right': '10px'}),
-            html.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='dash-button'),
-        ], style={'display': 'flex', 'justify-content': 'flex-end', 'margin-top': '20px', 'margin-bottom': '20px'}),
-        html.Div([
-            dcc.Graph(id='chi2-plot', style={'height': '400px', 'width': '50%', 'display': 'inline-block'}),
-            dcc.Graph(id='fraction-plot', style={'height': '400px', 'width': '50%', 'display': 'inline-block'})
-        ]),
-        html.Div(id='saxs-fit-plots', style={'width': '100%', 'marginTop': '20px'}),
-        dcc.Store(id='message-trigger', storage_type='memory'),
-        dcc.Store(id='example-data-store'),
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle("Message")),
-                dbc.ModalBody(id='modal-content'),
-                dbc.ModalFooter(
-                    dbc.Button("Close", id="close-modal", className="ms-auto", n_clicks=0)
-                ),
-            ],
-            id="message-modal",
-            is_open=False,
-        ),
-        dcc.Download(id="download-chi2-csv"),
-        dcc.Download(id="download-chi2-pdf"),
-        dcc.Download(id="download-fraction-csv"),
-        dcc.Download(id="download-fraction-pdf"),
-    ])
+        dbc.Container([
+            html.H1("KdSAXS - analysing binding equilibria with SAXS data using ensemble models", className="text-center my-4"),
+            dbc.Tabs([
+                dbc.Tab(create_info_tab(), label="Instructions"),
+                dbc.Tab(create_model_selection_tab(), label="Model Selection"),
+                dbc.Tab(create_experimental_saxs_tab(), label="Experimental SAXS"),
+                dbc.Tab(create_theoretical_saxs_tab(), label="Theoretical SAXS"),
+                dbc.Tab(create_analysis_parameters_tab(), label="Run analysis"),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    html.Div([
+                        dbc.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='dash-button'),
+                        dbc.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='dash-button'),
+                    ], className="d-flex justify-content-end mb-2"),
+                    dcc.Graph(id='chi2-plot')
+                ], md=6),
+                dbc.Col([
+                    html.Div([
+                        dbc.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='dash-button'),
+                        dbc.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='dash-button'),
+                    ], className="d-flex justify-content-end mb-2"),
+                    dcc.Graph(id='fraction-plot')
+                ], md=6),
+            ]),
+            html.Div(id='saxs-fit-plots', className="mt-4"),
+            dcc.Store(id='message-trigger', storage_type='memory'),
+            dcc.Store(id='example-data-store'),
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle("Message")),
+                    dbc.ModalBody(id='modal-content'),
+                    dbc.ModalFooter(
+                        dbc.Button("Close", id="close-modal", className="ms-auto", n_clicks=0)
+                    ),
+                ],
+                id="message-modal",
+                is_open=False,
+            ),
+            dcc.Download(id="download-chi2-csv"),
+            dcc.Download(id="download-chi2-pdf"),
+            dcc.Download(id="download-fraction-csv"),
+            dcc.Download(id="download-fraction-pdf"),
+        ], fluid=True, className="px-4", style={'max-width': '1400px', 'margin': '0 auto'}),
+    ], style={'background-color': '#f7f8fa'})

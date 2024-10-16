@@ -14,16 +14,10 @@ def register_callbacks_upload(app):
         [State('saxs-upload-container', 'children')]
     )
     def add_saxs_input(n_clicks, children):
-        print(f"Add button clicked. n_clicks: {n_clicks}")
-        print(f"Current number of children: {len(children)}")
-        
         if n_clicks is None:
-            print("n_clicks is None, returning no update")
             return dash.no_update
         
         new_index = len(children) + 1
-        print(f"Creating new upload with index: {new_index}")
-        
         new_upload = html.Div([
             html.Div([
                 dcc.Upload(
@@ -36,7 +30,7 @@ def register_callbacks_upload(app):
                        id={'type': 'delete-saxs', 'index': new_index},
                        n_clicks=0,
                        style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
-            ], style={'position': 'relative', 'flex': '1', 'marginRight': '10px'}),
+            ], style={'position': 'relative', 'flex': '3', 'marginRight': '10px'}),
             dcc.Input(
                 id={'type': 'input-concentration', 'index': new_index},
                 type='number',
@@ -44,11 +38,11 @@ def register_callbacks_upload(app):
                 value=None,
                 min=0,
                 step=0.1,
-                className='input-style'
+                className='input-style',
+                style={'flex': '1'}
             )
         ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         children.append(new_upload)
-        print(f"New number of children: {len(children)}")
         return children
 
     @app.callback(

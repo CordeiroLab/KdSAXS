@@ -1,5 +1,19 @@
-*.log
-*.fit
-*.dat
-*.int
-*.pyc
+# Ignore specific file types in all directories and subdirectories
+**/*.log
+**/*.fit
+**/*.dat
+**/*.int
+**/*.pyc
+
+# Ignore output_data folder and all its contents
+/output_data/
+
+# Ignore logs folder and all its contents
+/logs/
+
+# Ignore Python cache folders
+__pycache__/
+*.py[cod]
+
+# Ignore macOS system files
+.DS_Store
