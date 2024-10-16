@@ -11,16 +11,13 @@ KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scatt
 
 ## 🧰 How do I install KdSAXS?
 
-Install the dependencies:
+
+- Download this repository to your computer and execute in a terminal:
 
 ```
-pip install -r requirements.txt
-```
-
-Download this repository to your computer and execute in a terminal:
-
     cd KdSAXS
-    python  app.py
+    python app.py
+```
 
 Or alternatively clone this repository:
 
@@ -28,10 +25,17 @@ Or alternatively clone this repository:
    git clone https://github.com/tiagolopesgomes/KdSAXS.git
    cd KdSAXS
    ```
+  
+- Install the dependencies:
 
-Open your web browser and go to http://127.0.0.1:8050/
+```
+pip install -r requirements.txt
+```
 
-**Note**: Ensure that you have the ATSAS software installed and the path to the ATSAS binaries is correctly set in the `config.py` file.
+- Install the ATSAS software (https://www.embl-hamburg.de/biosaxs/download.html) and set the path to the ATSAS binaries in the `config.py` file.
+
+
+- Open your web browser and go to http://127.0.0.1:8050/
 
 
 ## 💻 How can I use KdSAXS?
