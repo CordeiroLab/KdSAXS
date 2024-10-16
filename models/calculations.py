@@ -54,10 +54,8 @@ class MonomerOligomerCalculation:
     @staticmethod
     def calculate(exp_saxs, mon_avg_int, dim_avg_int, concentration, n, kd_range, kd_points):
         try:
-            # Move the implementation of kds_saxs_mon_oligomer here
             Kd_values = np.round(np.geomspace(kd_range[0], kd_range[1], num=kd_points), decimals=2)
 
-            
             mon_avg_int = np.loadtxt(mon_avg_int, skiprows=1)
             dim_avg_int = np.loadtxt(dim_avg_int, skiprows=1)
         

@@ -3,6 +3,11 @@ from dash import dcc, html
 from config import ALLOWED_MODELS, DEFAULT_MODEL, KD_RANGE, CONCENTRATION_RANGE, KD_POINTS, CONCENTRATION_POINTS
 
 def create_model_selection():
+    model_display_names = {
+        'kds_saxs_mon_oligomer': 'Monomer-Oligomer',
+        'kds_saxs_oligomer_fitting': 'Protein Binding'
+    }
+
     return html.Div([
         html.Div([
             html.Div(["1) Choose model:", html.Sup(html.I(className="fas fa-info-circle", id="model-info", style={'marginLeft': '5px'}))], 
@@ -10,9 +15,9 @@ def create_model_selection():
         
             dcc.Dropdown(
                 id='model-selection',
-                options=[{'label': model, 'value': model} for model in ALLOWED_MODELS],
+                options=[{'label': model_display_names.get(model, model), 'value': model} for model in ALLOWED_MODELS],
                 value=DEFAULT_MODEL,
-                style={'width': '60%', 'padding': '5px'}
+                style={'width': '50%', 'padding': '5px'}
             ),
         ]),
         create_model_specific_inputs(),
@@ -112,6 +117,7 @@ def create_model_specific_inputs():
                     className="input-style"
                 )
             ], id='n-input-container', style={'display': 'inline-block', 'marginRight': '20px'}),
+
             html.Div([
                 html.Label("Receptor concentration: "),
                 dcc.Input(
@@ -191,11 +197,11 @@ def create_main_layout():
         dbc.Container([
             html.H1("KdSAXS - analysing binding equilibria with SAXS data using ensemble models", className="text-center my-4"),
             dbc.Tabs([
-                dbc.Tab(create_info_tab(), label="Instructions"),
-                dbc.Tab(create_model_selection_tab(), label="Model Selection"),
-                dbc.Tab(create_experimental_saxs_tab(), label="Experimental SAXS"),
-                dbc.Tab(create_theoretical_saxs_tab(), label="Theoretical SAXS"),
-                dbc.Tab(create_analysis_parameters_tab(), label="Run analysis"),
+                dbc.Tab(create_info_tab(), label="1. Instructions"),
+                dbc.Tab(create_model_selection_tab(), label="2. Model Selection"),
+                dbc.Tab(create_experimental_saxs_tab(), label="3. Experimental SAXS"),
+                dbc.Tab(create_theoretical_saxs_tab(), label="4. Theoretical SAXS"),
+                dbc.Tab(create_analysis_parameters_tab(), label="5. Run analysis"),
             ]),
             dbc.Row([
                 dbc.Col([
