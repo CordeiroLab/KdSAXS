@@ -164,6 +164,16 @@ def register_callbacks_upload(app):
         
         return updated_children
 
+    @app.callback(
+        Output('n-input-label', 'children'),
+        [Input('model-selection', 'value')]
+    )
+    def update_n_input_label(selected_model):
+        if selected_model == 'kds_saxs_oligomer_fitting':
+            return "Number of binding sites: "
+        else:
+            return "Stoichiometry: "
+
 
 
 

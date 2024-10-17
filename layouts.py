@@ -107,7 +107,7 @@ def create_model_specific_inputs():
     return html.Div([
         html.Div([
             html.Div([
-                html.Label("Stoichiometry: "),
+                html.Label(id='n-input-label', children="Stoichiometry: "),
                 dcc.Input(
                     id='input-n',
                     type='number',
@@ -150,7 +150,7 @@ def create_instructions():
                 dbc.Button("Monomer-Oligomer ", id="popover-mon-oligomer", color="link"),
                 " and ",
                 dbc.Button("Protein binding", id="popover-oligomer-fitting", color="link"),
-                "equilibria to fit your experimental data. When you click on a Kd value in the chi2 vs Kd plot the molecular fractions are displayed at the right side plot."
+                "equilibria to fit your experimental data. For the Monomer-Oligomer model the stoichiometry (n) corresponds to the Oligomer stoichiometry. For the protein binding model the value n corresponds to the number of independent binding sites. For n=1 this model falls back to a simple 1:1 Receptor-Ligand binding model. When you click on a Kd value in the chi2 vs Kd plot the molecular fractions are displayed at the right side plot."
             ]),
             html.Li("The inputed concentrations, choosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
             # html.Li([

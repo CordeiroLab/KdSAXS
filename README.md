@@ -108,7 +108,7 @@ pip install -r requirements.txt
     3. **Upload Theoretical SAXS Profiles**
        - Monomer-Oligomer: Upload two profiles (monomer and oligomer)
        - Protein Binding: Upload n+2 profiles, where n is the stoichiometry
-         (e.g., for n=2: upload profiles for R, RL, RL2, and L, where R and L are the free states for receptor and ligand respectively. RL and RL2 are one or two Ligand molecules bound to the Receptor dimer, respectively. For n=1 this model falls back to a simple 1:1 Receptor-Ligand binding)
+         (e.g., for n=2: upload profiles for R, RL, R2L2, and L, where R and L are the free states for receptor and ligand respectively. R2L and R2L2 are one or two Ligand molecules bound to the Receptor dimer, respectively. For n=1 this model falls back to a simple 1:1 Receptor-Ligand binding)
 
     4. **Set Analysis Parameters**
        - Kd range: Set minimum and maximum Kd values and number of points
