@@ -2,7 +2,7 @@
   <img src="assets/Logo_kdSAXS_2a.png" width="30%"/>
 </p>
 
-# K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using ensemble models
+<h1 align="center">K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using ensemble models</h1>
 
 <p align="center">
 <img src="assets/KdSAXS.png" width="80%"><img src="assets/KdSAXS_2.png" width="80%"/>
