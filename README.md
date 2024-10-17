@@ -9,13 +9,13 @@
 </p>
 
 
-## 💡 What is KdSAXS?
+## 💡 What is K~D~SAXS?
 
-KᴅSAXS leverages SAXS titration data to calculate the dissociation constant (Kᴅ) for self-assembly and binding equilibria, providing information on oligomeric state distributions. With its intuitive interface, KᴅSAXS addresses the challenges of analyzing heterogeneous and dynamic systems, such as protein oligomerization, transient complexes and intrinsically disordered proteins. Dive in and unlock the full potential of your SAXS data with KᴅSAXS!
+K~D~SAXS leverages SAXS titration data to calculate the dissociation constant (Kᴅ) for self-assembly and binding equilibria, providing information on oligomeric state distributions. With its intuitive interface, KᴅSAXS addresses the challenges of analyzing heterogeneous and dynamic systems, such as protein oligomerization, transient complexes and intrinsically disordered proteins. Dive in and unlock the full potential of your SAXS data with KᴅSAXS!
 
 <!-- [1](#ref1) -->
 
-## 🧰 How do I install KdSAXS?
+## 🧰 How do I install K~D~SAXS?
 
 
 - Download this repository to your computer and execute in a terminal:
@@ -52,10 +52,10 @@ pip install -r requirements.txt
 - Open your web browser and go to http://127.0.0.1:8050/
 
 
-## 💻 How can I use KdSAXS?
+## 💻 How can I use K~D~SAXS?
 - Follow the instructions on the webapp.
 
-- KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) data. 
+- K~D~SAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) data. 
 
 - This application allows you to analyze binding equilibria and determine dissociation constants (Kd) from SAXS experiments.
 
