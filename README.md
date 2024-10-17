@@ -11,7 +11,7 @@
 
 ## 💡 What is KdSAXS?
 
-KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) 
+KᴅSAXS leverages SAXS titration data to calculate the dissociation constant (Kᴅ) for self-assembly and binding equilibria, providing information on oligomeric state distributions. With its intuitive interface, KᴅSAXS addresses the challenges of analyzing heterogeneous and dynamic systems, such as protein oligomerization, transient complexes and intrinsically disordered proteins. Dive in and unlock the full potential of your SAXS data with KᴅSAXS!
 
 <!-- [1](#ref1) -->
 
