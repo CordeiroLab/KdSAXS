@@ -1,6 +1,12 @@
-# KdSAXS: A tool to analyse binding equilibria with SAXS data using ensemble models
+<p align="center">
+  <img src="assets/logo_KdSAXS_2a.png" width="30%"/>
+</p>
 
-<img src="assets/KdSAXS.png" width="80%"/><img src="assets/KdSAXS_2.png" width="80%"/>
+# K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using ensemble models
+
+<p align="center">
+<img src="assets/KdSAXS.png" width="80%"><img src="assets/KdSAXS_2.png" width="80%"/>
+</p>
 
 
 ## 💡 What is KdSAXS?
@@ -20,6 +26,14 @@ KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scatt
 ```
 
 Or alternatively clone this repository:
+
+   
+   - Install Git if you haven't already:
+     - On Ubuntu/Debian: `sudo apt-get install git`
+     - On macOS: Install Xcode Command Line Tools or use Homebrew: `brew install git`
+
+   - Clone the repository:
+
 
    ```
    git clone https://github.com/tiagolopesgomes/KdSAXS.git
