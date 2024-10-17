@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/Logo_KdSAXS_2a.png" width="30%"/>
+  <img src="assets/Logo_kdSAXS_2a.png" width="30%"/>
 </p>
 
 # K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using ensemble models
