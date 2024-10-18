@@ -17,51 +17,45 @@ K<sub>D</sub>SAXS leverages SAXS titration data to calculate the dissociation co
 
 ## 🧰 How do I install K<sub>D</sub>SAXS?
 
+1. ### Getting the repository
+    -  Download this repository to your computer and execute in a terminal:
 
-- Download this repository to your computer and execute in a terminal:
+        ```
+        cd KdSAXS
+        pip install -r requirements.txt
+        python app.py
+        ```
 
-```
-    cd KdSAXS
-    python app.py
-```
-
-Or alternatively clone this repository:
+    -  Or alternatively clone this repository:
 
    
-   - Install Git if you haven't already:
-     - On Ubuntu/Debian: `sudo apt-get install git`
-     - On macOS: Install Xcode Command Line Tools or use Homebrew: `brew install git`
+          - Install Git if you haven't already:
+            - On Ubuntu/Debian: `sudo apt-get install git`
+            - On macOS: Install Xcode Command Line Tools or use Homebrew: `brew install git`
 
-   - Clone the repository:
+          - Clone the repository and install the requirements:
 
-
-   ```
-   git clone https://github.com/tiagolopesgomes/KdSAXS.git
-   cd KdSAXS
-   ```
+              ```
+              git clone https://github.com/tiagolopesgomes/KdSAXS.git
+              cd KdSAXS
+              pip install -r requirements.txt
+              python app.py
+              ```
   
-- Install the dependencies:
 
-```
-pip install -r requirements.txt
-```
+3. ### Install the ATSAS software 
+    - Go to https://www.embl-hamburg.de/biosaxs/download.html, install the software, and set the ATSAS binaries directory in the `config.py` file.
 
-- Install the ATSAS software (https://www.embl-hamburg.de/biosaxs/download.html) and set the path to the ATSAS binaries in the `config.py` file.
-
-
-- Open your web browser and go to http://127.0.0.1:8050/
+2. ### Initializing K<sub>D</sub>SAXS
+    - Open your web browser and go to http://127.0.0.1:8050/
 
 
 ## 💻 How can I use K<sub>D</sub>SAXS?
 - Follow the instructions on the webapp.
 
-- K~D~SAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) data. 
-
-- This application allows you to analyze binding equilibria and determine dissociation constants (Kd) from SAXS experiments.
+- Choose between the two models, protein oligomerization and protein binding to fit your experimental data. 
 
 - Upload your SAXS profiles, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files.
-
-- Choose between the two models, protein oligomerization and protein binding to fit your experimental data. 
 
 - When you click on a Kd value in the χ² vs Kd plot the molecular fractions are displayed at the right side plot.
 
@@ -74,8 +68,6 @@ pip install -r requirements.txt
 
     <details>
     <summary>Click to expand</summary>
-
-    ### Detailed Information and File Formats
 
     ### Input File Formats
 
@@ -130,10 +122,11 @@ pip install -r requirements.txt
        - These ranges are used for simulating molecular fractions
 
     5. **Run Analysis**
-       - The app performs the following steps:
-         a. Calculates theoretical scattering for a range of Kd values and calculated molecular fractions.
-         b. Compares theoretical scattering to experimental data using χ² metric
-         c. Determines best-fit Kd and molecular fractions.
+
+       The app performs the following steps:
+       - Calculates theoretical scattering for a range of Kd values and calculated molecular fractions.
+       - Compares theoretical scattering to experimental data using χ² metric.
+       - Determines best-fit Kd and molecular fractions.
 
     6. **View and Interpret Results**
        - χ² vs Kd plot: Shows goodness of fit across Kd range

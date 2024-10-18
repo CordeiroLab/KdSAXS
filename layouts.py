@@ -142,17 +142,27 @@ def create_instructions():
     return html.Div([
         html.H2("Instructions", style={'textAlign': 'center', 'marginTop': '5px'}),
         html.Ul([
-            html.Li("KdSAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) data." 
-                    " This application allows you to analyze binding equilibria and determine dissociation constants (Kd) from SAXS experiments."),
+            html.Li([
+                html.Span("K"),
+                html.Sub("D"),
+                html.Span("SAXS is a tool for studying protein interactions using Small Angle X-ray Scattering (SAXS) data."),
+                " This application allows you to analyze binding equilibria and determine dissociation constants (K",
+                html.Sub("D"),
+                html.Span(") from SAXS experiments.")
+            ]),
             html.Li("Upload your SAXS profiles, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files."),
             html.Li([
                 "Choose between: ",
                 dbc.Button("Monomer-Oligomer ", id="popover-mon-oligomer", color="link"),
                 " and ",
                 dbc.Button("Protein binding", id="popover-oligomer-fitting", color="link"),
-                "equilibria to fit your experimental data. For the Monomer-Oligomer model the stoichiometry (n) corresponds to the Oligomer stoichiometry. For the protein binding model the value n corresponds to the number of independent binding sites. For n=1 this model falls back to a simple 1:1 Receptor-Ligand binding model. When you click on a Kd value in the chi2 vs Kd plot the molecular fractions are displayed at the right side plot."
+                "equilibria to fit your experimental data. For the Monomer-Oligomer model the stoichiometry (n) corresponds to the Oligomer stoichiometry. For the protein binding model the value n corresponds to the number of independent binding sites. For n=1 this model falls back to a simple 1:1 Receptor-Ligand binding model. When you click on a K",
+                html.Sub("D"),
+                " value in the χ² vs K",
+                html.Sub("D"),
+                " plot the molecular fractions are displayed at the right side plot."
             ]),
-            html.Li("The inputed concentrations, choosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
+            html.Li("The inputted concentrations, chosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
             # html.Li([
             #     "To see how the app works, you can ",
             #     html.Button("load an example", id="load-example", n_clicks=0, style={'cursor': 'pointer'}),
@@ -162,6 +172,8 @@ def create_instructions():
             html.Li([
                 "To see how the app works, you can load the example data in the github repository ",
                 html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/", target="_blank"),
+                ", or check detailed usage instructions ",
+                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS", target="_blank"),
                 "."
             ]),
         ]),
@@ -195,7 +207,11 @@ def create_info_tab():
 def create_main_layout():
     return html.Div([
         dbc.Container([
-            html.H1("KdSAXS - analysing binding equilibria with SAXS data using ensemble models", className="text-center my-4"),
+            html.H1([
+                "K",
+                html.Sub("D"),
+                "SAXS - analysing binding equilibria with SAXS data using ensemble models"
+            ], className="text-center my-4"),
             dbc.Tabs([
                 dbc.Tab(create_info_tab(), label="1. Instructions"),
                 dbc.Tab(create_model_selection_tab(), label="2. Model Selection"),
@@ -237,5 +253,6 @@ def create_main_layout():
             dcc.Download(id="download-chi2-pdf"),
             dcc.Download(id="download-fraction-csv"),
             dcc.Download(id="download-fraction-pdf"),
+            dcc.Store(id='experimental-data-store', storage_type='memory'),
         ], fluid=True, className="px-4", style={'max-width': '1400px', 'margin': '0 auto'}),
     ], style={'background-color': '#f7f8fa'})
