@@ -81,7 +81,8 @@ def register_callbacks_analysis(app, upload_directory):
         [Output('message-trigger', 'data'),
          Output('chi2-plot', 'figure'),
          Output('fraction-plot', 'figure'),
-         Output('saxs-fit-plots', 'children')],
+         Output('saxs-fit-plots', 'children'),
+         Output('experimental-data-store', 'data')],
         [Input('run-analysis', 'n_clicks'),
          Input('chi2-plot', 'clickData')],
         [State('model-selection', 'value'),
@@ -94,66 +95,87 @@ def register_callbacks_analysis(app, upload_directory):
          State('conc-min', 'value'),
          State('conc-max', 'value'),
          State('conc-points', 'value'),
-         State('input-receptor-concentration', 'value')]
+         State('input-receptor-concentration', 'value'),
+         State('experimental-data-store', 'data')]
     )
-    @handle_callback_errors
-    def run_analysis(n_clicks, click_data, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                     kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration):
+    def update_plots(n_clicks, click_data, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
+                     kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration, stored_data):
         ctx = dash.callback_context
         if not ctx.triggered:
-            return no_update, go.Figure(), go.Figure(), html.Div()
+            return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        trigger = ctx.triggered[0]['prop_id'].split('.')[0]
-
-        if trigger == 'run-analysis':
+        trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        
+        if trigger_id == 'run-analysis':
             return handle_run_analysis(n_clicks, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
                                        kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration)
-        elif trigger == 'chi2-plot':
-            return handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration)
+        elif trigger_id == 'chi2-plot':
+            return handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration, stored_data)
 
-        raise PreventUpdate
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     def handle_run_analysis(n_clicks, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
                             kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration):
         if n_clicks is None:
-            return no_update, go.Figure(), go.Figure(), html.Div()
+            return no_update, go.Figure(), go.Figure(), html.Div(), no_update
 
         # Check if ATSAS_PATH exists
         if not os.path.exists(ATSAS_PATH):
             error_message = f"Error: ATSAS path '{ATSAS_PATH}' does not exist. Please check the ATSAS_PATH in config.py and ensure it points to the correct location."
-            return {'message': error_message, 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
+            return {'message': error_message, 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
 
         if None in [kd_min, kd_max, kd_points, conc_min, conc_max, conc_points]:
-            return {'message': 'Please fill in all Kd and concentration fields.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
+            return {'message': 'Please fill in all Kd and concentration fields.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
 
         kd_range = (kd_min, kd_max)
         concentration_range = np.linspace(conc_min, conc_max, conc_points)
         input_errors = validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration)
         if input_errors:
-            return {'message': '\n'.join(input_errors), 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
+            return {'message': '\n'.join(input_errors), 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
 
         try:
             results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, upload_directory, kd_points)
             if results:
                 chi_squared_plot = create_chi_squared_plot(results, concentration_colors)
                 saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, upload_directory)
+                
+                # Extract experimental concentrations from results
+                experimental_concentrations = [result['concentration'].unique()[0] for result in results]
+                
                 best_kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
-                fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, receptor_concentration)
-                return {'message': 'Analysis Complete!', 'is_error': False, 'timestamp': time.time()}, chi_squared_plot, fraction_plot, saxs_fit_plots
+                fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
+                                                     receptor_concentration, experimental_concentrations, concentration_colors)
+                
+                # Store both concentrations and colors
+                stored_data = {
+                    'experimental_concentrations': experimental_concentrations,
+                    'concentration_colors': concentration_colors
+                }
+                
+                return {'message': 'Analysis Complete!', 'is_error': False, 'timestamp': time.time()}, chi_squared_plot, fraction_plot, saxs_fit_plots, stored_data
             else:
-                return {'message': 'No valid data processed.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
+                return {'message': 'No valid data processed.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
         except Exception as e:
             logger.exception("Error during analysis")
-            return {'message': f'An error occurred during analysis: {str(e)}', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update
+            return {'message': f'An error occurred during analysis: {str(e)}', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
 
-    def handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration):
+    def handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration, stored_data):
         if click_data is None:
-            return no_update, no_update, go.Figure(), no_update
+            return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         clicked_kd = click_data['points'][0]['x']
         concentration_range = np.linspace(conc_min, conc_max, conc_points)
-        fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, receptor_concentration)
-        return no_update, no_update, fraction_plot, no_update
+        
+        # Retrieve the experimental_concentrations and concentration_colors from stored_data
+        experimental_concentrations = stored_data.get('experimental_concentrations', [])
+        concentration_colors = stored_data.get('concentration_colors', {})
+        
+        # Print for debugging
+        print("Concentration colors in handle_chi2_plot_click:", concentration_colors)
+        
+        fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
+                                             receptor_concentration, experimental_concentrations, concentration_colors)
+        return dash.no_update, dash.no_update, fraction_plot, dash.no_update, dash.no_update
 
     @app.callback(
         Output('message-modal', 'is_open'),

@@ -10,7 +10,7 @@ def create_model_selection():
 
     return html.Div([
         html.Div([
-            html.Div(["1) Choose model:", html.Sup(html.I(className="fas fa-info-circle", id="model-info", style={'marginLeft': '5px'}))], 
+            html.Div(["Choose model:", html.Sup(html.I(className="fas fa-info-circle", id="model-info", style={'marginLeft': '5px'}))], 
                      className="centered-bold-text"),
         
             dcc.Dropdown(
@@ -27,7 +27,7 @@ def create_model_selection():
 def create_saxs_upload_section():
     return html.Div([
         html.Div([
-            "2) Upload experimental SAXS profiles and concentrations in μM:",
+            "Upload experimental SAXS profiles and concentrations in μM:",
             html.Sup(html.I(className="fas fa-info-circle", id="exp-saxs-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
         html.Div(id='saxs-upload-container', children=[
@@ -62,7 +62,7 @@ def create_saxs_upload_section():
 def create_theoretical_saxs_section():
     return html.Div([
         html.Div([
-            "3) Upload theoretical SAXS profiles:",
+            "Upload theoretical SAXS profiles:",
             html.Sup(html.I(className="fas fa-info-circle", id="theo-saxs-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
         html.Div(id='theoretical-saxs-upload-container', children=[
@@ -85,7 +85,7 @@ def create_theoretical_saxs_section():
 def create_kd_selection_section():
     return html.Div([
         html.Div([
-            "4) Choose parameters for simulation:",
+            "Choose parameters for simulation:",
             html.Sup(html.I(className="fas fa-info-circle", id="sim-params-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
         html.Div([
@@ -173,7 +173,7 @@ def create_instructions():
                 "To see how the app works, you can load the example data in the github repository ",
                 html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/", target="_blank"),
                 ", or check detailed usage instructions ",
-                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS", target="_blank"),
+                html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS#detailed-usage", target="_blank"),
                 "."
             ]),
         ]),
@@ -222,15 +222,15 @@ def create_main_layout():
             dbc.Row([
                 dbc.Col([
                     html.Div([
-                        dbc.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='dash-button'),
-                        dbc.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='dash-button'),
+                        dbc.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='secondary-dash-button'),
+                        dbc.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='secondary-dash-button'),
                     ], className="d-flex justify-content-end mb-2"),
                     dcc.Graph(id='chi2-plot')
                 ], md=6),
                 dbc.Col([
                     html.Div([
-                        dbc.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='dash-button'),
-                        dbc.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='dash-button'),
+                        dbc.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='secondary-dash-button'),
+                        dbc.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='secondary-dash-button'),
                     ], className="d-flex justify-content-end mb-2"),
                     dcc.Graph(id='fraction-plot')
                 ], md=6),
