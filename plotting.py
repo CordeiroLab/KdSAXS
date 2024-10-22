@@ -191,5 +191,4 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
     )
     
 
-    
     return fig
