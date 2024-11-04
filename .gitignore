@@ -4,11 +4,10 @@
 **/*.dat
 **/*.int
 **/*.pyc
+ngrok_monitor*
 
-# Ignore output_data folder and all its contents
+# Ignore folder and all its contents
 /output_data/
-
-# Ignore logs folder and all its contents
 /logs/
 
 # Ignore Python cache folders

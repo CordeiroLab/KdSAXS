@@ -176,7 +176,7 @@ If you use KdSAXS, please cite its original publication:
 
 # 🤝 Acknowledgements
 
-We would like to thank....
+We thank the IT service of ITQB (www.itqb.unl.pt) for assistance with the web server setup and Nuno P. Fernandes for his valuable suggestions and role as a tester.
 
 
 <!-- # 📖 References
