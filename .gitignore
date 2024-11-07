@@ -15,8 +15,9 @@ __pycache__/
 **/__pycache__/
 *.py[cod]
 
-#do not ignore
-!/examples/
-
 # Ignore macOS system files
 .DS_Store
+
+# Keep .dat files in examples folder
+!examples/**/*.dat
+!examples/**/*.int
