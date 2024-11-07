@@ -12,6 +12,7 @@ ngrok_monitor*
 
 # Ignore Python cache folders
 __pycache__
+**/__pycache__
 *.py[cod]
 
 # Ignore macOS system files
