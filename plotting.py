@@ -43,14 +43,14 @@ def create_chi_squared_plot(results, concentration_colors):
             showlegend=True,
             template='simple_white',
             height=400,
-            width=650
-        )
-        fig.update_layout(
+            width=650,
+            font=dict(size=16),
             title={
                 'text': "χ² vs Kd ",
                 'x': 0.5,
                 'xanchor': 'center',
-                'yanchor': 'top'
+                'yanchor': 'top',
+                'font': dict(size=20)
             }
         )
         return fig
@@ -122,7 +122,8 @@ def create_single_saxs_fit_plot(fit_filepath, concentration, kd, chi2, color):
         showlegend=True,
         legend=dict(x=0.98, y=0.98, xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.5)'),
         margin=dict(t=40, b=40, r=20, l=60),
-        height=600
+        height=600,
+        font=dict(size=16)
     )
     return dcc.Graph(figure=combined_plot)
 
@@ -161,7 +162,8 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
         'text': f'Molecular fractions (Kd = {kd:.2f}, n = {n_value})',
         'x': 0.5,
         'xanchor': 'center',
-        'yanchor': 'top'
+        'yanchor': 'top',
+        'font': dict(size=20)
     }
 )
 
@@ -187,7 +189,8 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
         height=400,
         width=650,
         showlegend=True,
-        legend=dict(title='Species')
+        legend=dict(title='Species'),
+        font=dict(size=16)
     )
     
     fig.update_xaxes(type=xscale)
