@@ -28,3 +28,14 @@ def truncate_filename(filename, max_length=50):
     name, extension = os.path.splitext(filename)
     truncated = name[:max_length-3-len(extension)] + '...' + extension
     return truncated
+
+def format_concentration(concentration, precision=6):
+    """
+    Format concentration value consistently throughout the application.
+    Args:
+        concentration (float): The concentration value
+        precision (int): Number of decimal places to keep
+    Returns:
+        str: Formatted concentration string
+    """
+    return f"{float(concentration):.{precision}g}"

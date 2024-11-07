@@ -238,9 +238,10 @@ def create_main_layout():
             html.Div(id='saxs-fit-plots', className="mt-4"),
             dcc.Store(id='message-trigger', storage_type='memory'),
             dcc.Store(id='example-data-store'),
+            dcc.Store(id='calculation-trigger', storage_type='memory'),
             dbc.Modal(
                 [
-                    dbc.ModalHeader(dbc.ModalTitle("Message")),
+                    #dbc.ModalHeader(dbc.ModalTitle("Status")),
                     dbc.ModalBody(id='modal-content'),
                     dbc.ModalFooter(
                         dbc.Button("Close", id="close-modal", className="ms-auto", n_clicks=0)
@@ -248,11 +249,32 @@ def create_main_layout():
                 ],
                 id="message-modal",
                 is_open=False,
+                centered=True,
+                className="message-modal",
             ),
             dcc.Download(id="download-chi2-csv"),
             dcc.Download(id="download-chi2-pdf"),
             dcc.Download(id="download-fraction-csv"),
             dcc.Download(id="download-fraction-pdf"),
             dcc.Store(id='experimental-data-store', storage_type='memory'),
+            dbc.Modal(
+                [
+                    #dbc.ModalHeader(dbc.ModalTitle("Status")),
+                    dbc.ModalBody([
+                        html.Div([
+                            html.H4("Calculating...", className="mb-3", style={'color': '#007bff'}),
+                            dbc.Spinner(size="lg", color="primary"),
+                        ], style={'textAlign': 'center'})
+                    ]),
+                    #dbc.ModalFooter(
+                    #    html.Div(className="ms-auto")
+                    #),
+                ],
+                id="loading-modal",
+                is_open=False,
+                centered=True,
+                backdrop="static",
+                className="message-modal",
+            ),
         ], fluid=True, className="px-4", style={'max-width': '1400px', 'margin': '0 auto'}),
     ], style={'background-color': '#f7f8fa'})

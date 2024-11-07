@@ -281,3 +281,76 @@ html, body {
 #saxs-upload-container .input-style {
     flex: 1;
 }
+
+.modal-loading {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-loading .modal-content {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.loading-text {
+    color: #007bff;
+    margin-top: 15px;
+    font-size: 1.2em;
+}
+
+/* Style for the message modal */
+.message-modal .modal-content {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+.message-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 1rem;
+}
+
+.message-modal .modal-body {
+    padding: 1.5rem;
+    font-size: 1.1em;
+}
+
+.message-modal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+/* Style for success message */
+.message-success {
+    color: #28a745;
+    font-size: 1.2em;
+}
+
+/* Style for error message */
+.message-error {
+    color: #dc3545;
+}
+
+/* Spinner customization */
+.message-modal .spinner-border {
+    margin-top: 1rem;
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Modal backdrop */
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+/* Center modal content */
+.message-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+}

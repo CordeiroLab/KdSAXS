@@ -87,8 +87,8 @@ def register_callbacks_upload(app):
 
     
     def update_theoretical_saxs_uploads(selected_model, n_value):
-        print(f"selected_model: {selected_model}")
-        print(f"n_value: {n_value}")
+        #print(f"selected_model: {selected_model}")
+        #print(f"n_value: {n_value}")
 
         if selected_model == 'kds_saxs_oligomer_fitting' and n_value is not None:
             uploads = []
@@ -145,9 +145,9 @@ def register_callbacks_upload(app):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         index_to_delete = json.loads(button_id)['index']
         
-        print(f"Deleting index: {index_to_delete}")
+        '''print(f"Deleting index: {index_to_delete}")
         for child in children:
-            print(f"Child id: {child['props']['children'][0]['props']['children'][0]['props']['id']}")
+            print(f"Child id: {child['props']['children'][0]['props']['children'][0]['props']['id']}")'''
         
         updated_children = [
             child for child in children 

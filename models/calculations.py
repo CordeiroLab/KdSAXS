@@ -7,6 +7,7 @@ import subprocess
 import re
 from config import KD_RANGE, KD_POINTS, ATSAS_PATH, LOG_DIRECTORY
 from scripts.error_handling import logger
+from scripts.utils import format_concentration
 
 def extract_chi_squared(log_file_path):
     try:
@@ -62,14 +63,14 @@ class MonomerOligomerCalculation:
             chi_squared_values = []
         
             for Kd in Kd_values:
-                print(Kd)
+                #print(Kd)
                 M, O = MonomerOligomerCalculation.solve_system(concentration, Kd, n)
                 if not np.isnan(M):
                     monomer_fraction = M / concentration
                     oligomer_fraction = n * O / concentration  # Multiply by n because each oligomer contains n monomers
         
-                    print(f"Concentration is : {concentration}")
-                    print(f" Fractions are: monomer : {monomer_fraction}, oligomer : {oligomer_fraction}")
+                    #print(f"Concentration is : {concentration}")
+                    #print(f" Fractions are: monomer : {monomer_fraction}, oligomer : {oligomer_fraction}")
         
                     # Calculate the weighted sum of the theoretical scattering curves
                     theoretical_sum_int = monomer_fraction * mon_avg_int + oligomer_fraction * dim_avg_int
@@ -81,16 +82,16 @@ class MonomerOligomerCalculation:
                     os.makedirs(LOG_DIRECTORY, exist_ok=True)
         
                     # System call to oligomer to calculate chi-squared to the experimental data
-                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{concentration}_{Kd}.fit --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')} -cst -ws -un=2"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{format_concentration(concentration)}_{Kd}.fit --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')} -cst -ws -un=2"
                     cmd = cmd.replace('\0', '')  # because of \ in pathname
         
-                    print(cmd)
+                    #print(cmd)
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         
                     # Parse the output from oligomer to retrieve the chi-squared value
                     chi_squared = extract_chi_squared(os.path.join(LOG_DIRECTORY, 'oligomer.log'))
         
-                    print(f"For Kd={Kd} uM  X2={chi_squared}")
+                    #print(f"For Kd={Kd} uM  X2={chi_squared}")
                     
                     chi_squared_values.append((Kd, concentration, monomer_fraction, oligomer_fraction, chi_squared))
         
@@ -195,7 +196,7 @@ class ProteinBindingCalculation:
                     os.makedirs(LOG_DIRECTORY, exist_ok=True)
 
                     # Run ATSAS oligomer tool to calculate chi-squared
-                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{ligand_concentration}_{Kd}.fit  --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')}  -cst -ws -un=1"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff ./output_data/theoretical_{Kd}.int {exp_saxs} --fit=./output_data/fit_{format_concentration(ligand_concentration)}_{Kd}.fit --out={os.path.join(LOG_DIRECTORY, 'oligomer.log')} -cst -ws -un=1"
                     cmd = cmd.replace('\0', '')  # because of \ in pathname
 
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)

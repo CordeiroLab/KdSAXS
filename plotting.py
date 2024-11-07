@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from models.calculations import MonomerOligomerCalculation, ProteinBindingCalculation
 import plotly.io as pio
+import plotly.express as px
+from scripts.utils import format_concentration
 
 def create_chi_squared_plot(results, concentration_colors):
     if results:
@@ -22,16 +24,16 @@ def create_chi_squared_plot(results, concentration_colors):
                 y=df_subset['chi2'], 
                 mode='lines+markers',
                 name=f'{concentration}',
-                line=dict(color=concentration_colors[concentration])
+                line=dict(color=concentration_colors[concentration])  # concentration is already formatted
             ))
 
         fig.add_trace(go.Scatter(
             x=avg_chi_squared['kd'],
-        y=avg_chi_squared['chi2'],
-        mode='lines+markers',
-        name='Average',
-        line=dict(color='black', width=2, dash='dash')
-    ))
+            y=avg_chi_squared['chi2'],
+            mode='lines+markers',
+            name='Average',
+            line=dict(color='black', width=2, dash='dash')
+        ))
 
         fig.update_xaxes(type="log")
         fig.update_layout(
@@ -64,7 +66,7 @@ def create_saxs_fit_plots(results, concentration_colors, upload_directory):
         best_chi2 = best_fit['chi2']
         best_concentration = best_fit['concentration']
 
-        fit_filename = f"fit_{int(best_concentration)}_{best_kd}.fit"
+        fit_filename = f"fit_{format_concentration(best_concentration)}_{best_kd}.fit"
         fit_filepath = os.path.join(upload_directory, fit_filename)
 
         if os.path.exists(fit_filepath):
@@ -84,7 +86,7 @@ def create_saxs_fit_plots(results, concentration_colors, upload_directory):
     return combined_columns
 
 def create_single_saxs_fit_plot(fit_filepath, concentration, kd, chi2, color):
-    fit_data = pd.read_csv(fit_filepath, delim_whitespace=True, skiprows=1, header=None,
+    fit_data = pd.read_csv(fit_filepath, sep='\s+', skiprows=1, header=None,
                            names=['s', 'Iexp', 'sigma', 'Ifit'])
     fit_data['Iexp_log'] = np.log10(fit_data['Iexp'])
     fit_data['Ifit_log'] = np.log10(fit_data['Ifit'])
@@ -124,59 +126,57 @@ def create_single_saxs_fit_plot(fit_filepath, concentration, kd, chi2, color):
     )
     return dcc.Graph(figure=combined_plot)
 
-def create_fraction_plot(kd, n_value, concentration_range, selected_model, receptor_concentration, experimental_concentrations, concentration_colors):
+def create_fraction_plot(kd, n_value, concentration_range, selected_model, receptor_concentration, experimental_concentrations, concentration_colors, xscale='log'):
+    if xscale == 'log':
+        concentration_range = np.logspace(np.log10(min(concentration_range)), 
+                                        np.log10(max(concentration_range)), 
+                                        len(concentration_range))
+    
     if selected_model == 'kds_saxs_mon_oligomer':
         fractions = MonomerOligomerCalculation.calculate_fractions(kd, concentration_range, n_value)
-        
+        # Plot for monomer-oligomer model
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=fractions['concentration'], y=fractions['monomer_fraction'],
-                                 mode='lines', name='Monomer', line=dict(color='green')))
+                                mode='lines', name='Monomer', line=dict(color='green')))
         fig.add_trace(go.Scatter(x=fractions['concentration'], y=fractions['oligomer_fraction'],
-                                 mode='lines', name='Oligomer', line=dict(color='red')))
-        
-        fig.update_layout(
-        title={
-            'text': f'Molecular fractions (Kd = {kd:.2f}, n = {n_value})',
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        }
-    )
-
-    elif selected_model == 'kds_saxs_oligomer_fitting':
+                                mode='lines', name='Oligomer', line=dict(color='red')))
+    else:
         fractions = ProteinBindingCalculation.calculate_fractions(kd, concentration_range, n_value, receptor_concentration)
-        
+        # Plot for protein binding model
         fig = go.Figure()
         for i in range(n_value + 1):
-            fig.add_trace(go.Scatter(x=fractions['concentration'], y=fractions[f'receptor_{i}_frac'],
-                                     mode='lines', name=f'Receptor_{i}'))
-        fig.add_trace(go.Scatter(x=fractions['concentration'], y=fractions['ligand_free_frac'],
-                                 mode='lines', name='Free Ligand'))
-        
-        fig.update_layout(
-        title={
-            'text': f'Molecular fractions (Kd = {kd:.2f}, n = {n_value}, Receptor Conc. = {receptor_concentration:.2f})',
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        }
-    )   
-            
-    # Print for debugging
-    print("Concentration colors in update_fraction_plot:", concentration_colors)
+            fig.add_trace(go.Scatter(x=fractions['concentration'], 
+                                   y=fractions[f'receptor_{i}_frac'],
+                                   mode='lines', 
+                                   name=f'Receptor_{i}', 
+                                   line=dict(color=px.colors.qualitative.Set1[i])))
+        fig.add_trace(go.Scatter(x=fractions['concentration'], 
+                                y=fractions['ligand_free_frac'],
+                                mode='lines', 
+                                name='Free Ligand', 
+                                line=dict(color='black')))
+
+    fig.update_layout(
+    title={
+        'text': f'Molecular fractions (Kd = {kd:.2f}, n = {n_value})',
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }
+)
 
     # Add scatter traces for experimental concentrations
     for conc in experimental_concentrations:
-        color = concentration_colors.get(str(conc), 'black')  # Convert conc to string
-        print(f"Concentration: {conc}, Color: {color}")  # Print for debugging
+        # conc should already be formatted from the DataFrame
         fig.add_trace(go.Scatter(
-            x=[conc, conc],
-            y=[0, 1],  # Create a vertical line from bottom to top
+            x=[float(conc), float(conc)],  # Convert string back to float for plotting
+            y=[0, 1],
             mode='lines',
-            line=dict(color=color, width=2, dash='dash'),
+            line=dict(color=concentration_colors[conc], width=2, dash='dash'),
             name=f'Conc. ({conc})',
             showlegend=True
         ))
+    
     
     fig.update_layout(
         xaxis_title='Ligand Concentration (concentration units)',
@@ -190,5 +190,6 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
         legend=dict(title='Species')
     )
     
+    fig.update_xaxes(type=xscale)
 
     return fig

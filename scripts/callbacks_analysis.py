@@ -5,7 +5,7 @@ from plotly.colors import DEFAULT_PLOTLY_COLORS
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from scripts.utils import save_file
+from scripts.utils import save_file, format_concentration
 from models.model_factory import ModelFactory
 from scripts.error_handling import logger, handle_callback_errors
 from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot
@@ -42,24 +42,38 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
     for i, item in enumerate(upload_container):
         exp_saxs, ligand_concentration = extract_saxs_data(item)
         if exp_saxs and ligand_concentration:
-            if ligand_concentration not in concentration_colors:
+            formatted_conc = format_concentration(ligand_concentration)
+            if formatted_conc not in concentration_colors:
                 color_index = len(concentration_colors) % len(color_sequence)
-                concentration_colors[ligand_concentration] = color_sequence[color_index]
+                concentration_colors[formatted_conc] = color_sequence[color_index]
 
             exp_file_path = save_file(f"exp_saxs_{i+1}.dat", exp_saxs, upload_directory)
             chi_squared_df = calculate_chi_squared(model, selected_model, exp_file_path, theoretical_saxs_uploads, 
                                                    ligand_concentration, n_value, kd_range, receptor_concentration, upload_directory, kd_points)
+            chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
             results.append(chi_squared_df)
 
     return results, concentration_colors
 
 def extract_saxs_data(item):
     try:
+        # Get the experimental SAXS data
         exp_saxs = item['props']['children'][0]['props']['children'][0]['props']['contents']
-        ligand_concentration = item['props']['children'][1]['props']['value']
-        return exp_saxs, ligand_concentration
-    except KeyError as e:
-        logger.error(f"KeyError: {e} in item")
+        
+        # Get the concentration value
+        concentration_input = item['props']['children'][1]['props']['value']
+        if concentration_input is None:
+            logger.error("No concentration value provided")
+            return None, None
+            
+        ligand_concentration = float(concentration_input)
+        
+        # Format the concentration consistently
+        formatted_concentration = format_concentration(ligand_concentration)
+        
+        return exp_saxs, float(formatted_concentration)
+    except (KeyError, ValueError, TypeError) as e:
+        logger.error(f"Error extracting SAXS data: {str(e)}")
         return None, None
 
 def calculate_chi_squared(model, selected_model, exp_file_path, theoretical_saxs_uploads, ligand_concentration, n_value, kd_range, receptor_concentration, upload_directory, kd_points):
@@ -77,13 +91,28 @@ def calculate_chi_squared(model, selected_model, exp_file_path, theoretical_saxs
         raise ValueError(f"Unknown model: {selected_model}")
 
 def register_callbacks_analysis(app, upload_directory):
+    # First callback to show loading modal
     @app.callback(
-        [Output('message-trigger', 'data'),
+        [Output('loading-modal', 'is_open'),
+         Output('calculation-trigger', 'data')],
+        Input('run-analysis', 'n_clicks'),
+        prevent_initial_call=True
+    )
+    def show_loading_modal(n_clicks):
+        if n_clicks is None:
+            raise PreventUpdate
+        return True, {'n_clicks': n_clicks}
+
+    # Main callback for calculations
+    @app.callback(
+        [Output('message-modal', 'is_open'),
+         Output('modal-content', 'children'),
          Output('chi2-plot', 'figure'),
          Output('fraction-plot', 'figure'),
          Output('saxs-fit-plots', 'children'),
          Output('experimental-data-store', 'data')],
-        [Input('run-analysis', 'n_clicks'),
+        [Input('calculation-trigger', 'data'),
+         Input('close-modal', 'n_clicks'),
          Input('chi2-plot', 'clickData')],
         [State('model-selection', 'value'),
          State('input-n', 'value'),
@@ -96,106 +125,86 @@ def register_callbacks_analysis(app, upload_directory):
          State('conc-max', 'value'),
          State('conc-points', 'value'),
          State('input-receptor-concentration', 'value'),
-         State('experimental-data-store', 'data')]
+         State('experimental-data-store', 'data'),
+         State('message-modal', 'is_open')],
+        prevent_initial_call=True
     )
-    def update_plots(n_clicks, click_data, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                     kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration, stored_data):
+    def update_all(calculation_trigger, close_clicks, click_data,
+                   selected_model, n_value, upload_container, theoretical_saxs_uploads,
+                   kd_min, kd_max, kd_points, conc_min, conc_max, conc_points,
+                   receptor_concentration, stored_data, modal_is_open):
+        
         ctx = dash.callback_context
         if not ctx.triggered:
-            return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            raise PreventUpdate
 
         trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if trigger_id == 'close-modal':
+            return False, '', dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
-        if trigger_id == 'run-analysis':
-            return handle_run_analysis(n_clicks, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                                       kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration)
+        elif trigger_id == 'calculation-trigger':
+            # Basic validation first
+            if not os.path.exists(ATSAS_PATH):
+                return True, f"Error: ATSAS path '{ATSAS_PATH}' does not exist.", dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+            if None in [kd_min, kd_max, kd_points, conc_min, conc_max, conc_points]:
+                return True, 'Please fill in all Kd and concentration fields.', dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+            kd_range = (kd_min, kd_max)
+            concentration_range = np.linspace(conc_min, conc_max, conc_points)
+            input_errors = validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration)
+            if input_errors:
+                return True, '\n'.join(input_errors), dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+            try:
+                results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, 
+                                                               kd_range, receptor_concentration, upload_directory, kd_points)
+                if results:
+                    chi_squared_plot = create_chi_squared_plot(results, concentration_colors)
+                    saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, upload_directory)
+                    
+                    experimental_concentrations = [result['concentration'].unique()[0] for result in results]
+                    
+                    best_kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
+                    fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
+                                                      receptor_concentration, experimental_concentrations, concentration_colors)
+                    
+                    stored_data = {
+                        'experimental_concentrations': experimental_concentrations,
+                        'concentration_colors': concentration_colors
+                    }
+                    
+                    return True, html.Div('Analysis Complete!', className='message-success'), chi_squared_plot, fraction_plot, saxs_fit_plots, stored_data
+                else:
+                    return True, html.Div('No valid data processed.', className='message-error'), dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            except Exception as e:
+                logger.exception("Error during analysis")
+                return True, f'An error occurred during analysis: {str(e)}', dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
         elif trigger_id == 'chi2-plot':
-            return handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration, stored_data)
+            if click_data is None or stored_data is None:
+                raise PreventUpdate
 
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            clicked_kd = click_data['points'][0]['x']
+            concentration_range = np.linspace(conc_min, conc_max, conc_points)
+            experimental_concentrations = stored_data.get('experimental_concentrations', [])
+            concentration_colors = stored_data.get('concentration_colors', {})
+            
+            fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
+                                              receptor_concentration, experimental_concentrations, concentration_colors)
+            return False, '', dash.no_update, fraction_plot, dash.no_update, dash.no_update
 
-    def handle_run_analysis(n_clicks, selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                            kd_min, kd_max, kd_points, conc_min, conc_max, conc_points, receptor_concentration):
-        if n_clicks is None:
-            return no_update, go.Figure(), go.Figure(), html.Div(), no_update
+        raise PreventUpdate
 
-        # Check if ATSAS_PATH exists
-        if not os.path.exists(ATSAS_PATH):
-            error_message = f"Error: ATSAS path '{ATSAS_PATH}' does not exist. Please check the ATSAS_PATH in config.py and ensure it points to the correct location."
-            return {'message': error_message, 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
-
-        if None in [kd_min, kd_max, kd_points, conc_min, conc_max, conc_points]:
-            return {'message': 'Please fill in all Kd and concentration fields.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
-
-        kd_range = (kd_min, kd_max)
-        concentration_range = np.linspace(conc_min, conc_max, conc_points)
-        input_errors = validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration)
-        if input_errors:
-            return {'message': '\n'.join(input_errors), 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
-
-        try:
-            results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, upload_directory, kd_points)
-            if results:
-                chi_squared_plot = create_chi_squared_plot(results, concentration_colors)
-                saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, upload_directory)
-                
-                # Extract experimental concentrations from results
-                experimental_concentrations = [result['concentration'].unique()[0] for result in results]
-                
-                best_kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
-                fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
-                                                     receptor_concentration, experimental_concentrations, concentration_colors)
-                
-                # Store both concentrations and colors
-                stored_data = {
-                    'experimental_concentrations': experimental_concentrations,
-                    'concentration_colors': concentration_colors
-                }
-                
-                return {'message': 'Analysis Complete!', 'is_error': False, 'timestamp': time.time()}, chi_squared_plot, fraction_plot, saxs_fit_plots, stored_data
-            else:
-                return {'message': 'No valid data processed.', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
-        except Exception as e:
-            logger.exception("Error during analysis")
-            return {'message': f'An error occurred during analysis: {str(e)}', 'is_error': True, 'timestamp': time.time()}, no_update, no_update, no_update, no_update
-
-    def handle_chi2_plot_click(click_data, n_value, conc_min, conc_max, conc_points, selected_model, receptor_concentration, stored_data):
-        if click_data is None:
-            return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
-        clicked_kd = click_data['points'][0]['x']
-        concentration_range = np.linspace(conc_min, conc_max, conc_points)
-        
-        # Retrieve the experimental_concentrations and concentration_colors from stored_data
-        experimental_concentrations = stored_data.get('experimental_concentrations', [])
-        concentration_colors = stored_data.get('concentration_colors', {})
-        
-        # Print for debugging
-        print("Concentration colors in handle_chi2_plot_click:", concentration_colors)
-        
-        fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
-                                             receptor_concentration, experimental_concentrations, concentration_colors)
-        return dash.no_update, dash.no_update, fraction_plot, dash.no_update, dash.no_update
-
+    # Callback to close loading modal after calculations
     @app.callback(
-        Output('message-modal', 'is_open'),
-        Output('modal-content', 'children'),
-        Input('message-trigger', 'data'),
-        Input('close-modal', 'n_clicks'),
-        State('message-modal', 'is_open')
+        Output('loading-modal', 'is_open', allow_duplicate=True),
+        Input('message-modal', 'is_open'),
+        prevent_initial_call=True
     )
-    def toggle_modal(message_data, n_clicks, is_open):
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            return False, ''
-        
-        trigger = ctx.triggered[0]['prop_id'].split('.')[0]
-        
-        if trigger == 'message-trigger' and message_data:
-            return True, message_data['message']
-        elif trigger == 'close-modal':
-            return False, ''
-        return is_open, ''
+    def close_loading_modal(message_modal_open):
+        return False
 
     @app.callback(
         Output('download-chi2-csv', 'data'),
