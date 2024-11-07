@@ -16,6 +16,7 @@ for directory in [UPLOAD_DIRECTORY, LOG_DIRECTORY]:
 
 # Initialize the Dash app with Bootstrap theme
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, 'https://use.fontawesome.com/releases/v5.8.1/css/all.css'])
+app._favicon = "./assets/favicon.ico"
 
 # Expose the server object for gunicorn
 #server = app.server
