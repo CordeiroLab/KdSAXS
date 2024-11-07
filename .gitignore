@@ -20,4 +20,3 @@ __pycache__/
 
 # Keep .dat files in examples folder
 !examples/**/*.dat
-!examples/**/*.int
