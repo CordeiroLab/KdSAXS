@@ -186,20 +186,19 @@ html, body {
 }
 
 .popover {
-    max-width: none;
+    max-width: 90vw;  /* Maximum width relative to viewport */
     width: auto;
-    white-space: nowrap;
     border: 1.5px solid #000000;
-    
+    position: relative;
 }
 
 .popover-body {
-    padding: 20px 30px !important;
+    padding: 15px !important;
     background-color: #ffffff;
-    white-space: normal;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    font-size: 18px;
+    white-space: normal;  /* Allow text to wrap */
+    font-size: 16px;
+    overflow-x: auto;    /* Add scroll if needed */
+    max-height: 80vh;    /* Maximum height relative to viewport */
 }
 
 .fa-minus-circle {
@@ -253,6 +252,15 @@ html, body {
     .input-group {
         width: 100%;
         margin-bottom: 10px;
+    }
+
+    .popover {
+        max-width: 95vw;  /* Wider on small screens */
+    }
+    
+    .popover-body {
+        padding: 10px !important;
+        font-size: 14px;  /* Smaller font on small screens */
     }
 }
 
@@ -353,4 +361,11 @@ html, body {
     align-items: center;
     justify-content: center;
     min-height: 150px;
+}
+
+/* For mathematical equations */
+.popover .MathJax {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
 }

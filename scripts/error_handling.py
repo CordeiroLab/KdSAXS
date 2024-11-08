@@ -1,7 +1,7 @@
 # utils/error_handling.py
 import logging
 import os
-from config import LOG_DIRECTORY
+from config import BASE_DIR
 import functools
 from dash import html, no_update
 import plotly.graph_objects as go
@@ -15,8 +15,12 @@ def setup_logger():
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     
+    # Create logs directory if it doesn't exist
+    log_dir = os.path.join(BASE_DIR, "output_data", "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
     # Create file handler and set level to debug
-    log_file = os.path.join(LOG_DIRECTORY, 'saxs_analysis.log')
+    log_file = os.path.join(log_dir, 'saxs_analysis.log')
     fh = logging.FileHandler(log_file)
     fh.setLevel(logging.DEBUG)
     

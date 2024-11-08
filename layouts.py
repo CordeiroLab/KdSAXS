@@ -27,9 +27,35 @@ def create_model_selection():
 def create_saxs_upload_section():
     return html.Div([
         html.Div([
-            "Upload experimental SAXS profiles and concentrations in μM:",
+            "Upload experimental SAXS profiles and concentrations:",
             html.Sup(html.I(className="fas fa-info-circle", id="exp-saxs-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
+        
+        html.Div([
+            html.Label("Concentration units: ", 
+                      style={
+                          'marginRight': '10px',
+                          'display': 'flex',
+                          'alignItems': 'center',
+                          'height': '38px'
+                      }),
+            dcc.Dropdown(
+                id='concentration-units',
+                options=[
+                    {'label': 'nM', 'value': 'nM'},
+                    {'label': 'µM', 'value': 'µM'},
+                    {'label': 'mM', 'value': 'mM'}
+                ],
+                value='µM',
+                style={'width': '100px'}
+            )
+        ], style={
+            'marginBottom': '20px',
+            'display': 'flex',
+            'justifyContent': 'flex-end',
+            'alignItems': 'center'
+        }),
+        
         html.Div(id='saxs-upload-container', children=[
             html.Div([
                 html.Div([
@@ -160,7 +186,9 @@ def create_instructions():
                 html.Sub("D"),
                 " value in the χ² vs K",
                 html.Sub("D"),
-                " plot the molecular fractions are displayed at the right side plot."
+                " plot the molecular fractions are displayed at the right side plot. The lowest χ² indicates the best predicted K",
+                html.Sub("D"),
+                " value."
             ]),
             html.Li("The inputted concentrations, chosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
             # html.Li([
@@ -276,5 +304,6 @@ def create_main_layout():
                 backdrop="static",
                 className="message-modal",
             ),
+            
         ], fluid=True, className="px-4", style={'max-width': '1400px', 'margin': '0 auto'}),
     ], style={'background-color': '#f7f8fa'})

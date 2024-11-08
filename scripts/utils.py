@@ -3,15 +3,33 @@ import base64
 import pandas as pd
 import plotly.graph_objects as go
 
-def save_file(name, content, directory):
-    """Decode and store a file uploaded with Plotly Dash."""
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+def save_file(name, content, directory, subdir=None):
+    """
+    Decode and store a file uploaded with Plotly Dash.
+    Args:
+        name: filename
+        content: file content
+        directory: session directory
+        subdir: subdirectory within session directory (e.g., 'uploads/experimental')
+    """
+    if subdir:
+        save_dir = os.path.join(directory, subdir)
+    else:
+        save_dir = directory
+        
+    os.makedirs(save_dir, exist_ok=True)
+    
     data = content.encode("utf8").split(b";base64,")[1]
-    file_path = os.path.join(directory, name)
+    file_path = os.path.join(save_dir, name)
     with open(file_path, "wb") as fp:
         fp.write(base64.decodebytes(data))
-    return file_path  # Return the path where the file was saved
+    return file_path
+
+def get_session_path(session_dir, subdir):
+    """Get full path for a subdirectory in session directory"""
+    path = os.path.join(session_dir, subdir)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 def uploaded_files(directory):
     """List the files in the upload directory."""

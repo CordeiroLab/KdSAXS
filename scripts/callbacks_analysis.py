@@ -1,5 +1,5 @@
 import dash
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, MATCH
 from dash import html, no_update, dcc
 from plotly.colors import DEFAULT_PLOTLY_COLORS
 import pandas as pd
@@ -8,13 +8,14 @@ import plotly.graph_objects as go
 from scripts.utils import save_file, format_concentration
 from models.model_factory import ModelFactory
 from scripts.error_handling import logger, handle_callback_errors
-from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot
+from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot, create_single_saxs_fit_plot
 import plotly.io as pio
 import io
 import time
 from dash.exceptions import PreventUpdate
 import os
 from config import ATSAS_PATH
+import json
 
 
 def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration):
@@ -33,7 +34,7 @@ def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_
         errors.append("Receptor concentration is required for the selected model.")
     return errors
 
-def process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, upload_directory, kd_points):
+def process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, session_dir, kd_points):
     model = ModelFactory.get_model(selected_model)
     results = []
     concentration_colors = {}
@@ -47,9 +48,23 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
                 color_index = len(concentration_colors) % len(color_sequence)
                 concentration_colors[formatted_conc] = color_sequence[color_index]
 
-            exp_file_path = save_file(f"exp_saxs_{i+1}.dat", exp_saxs, upload_directory)
-            chi_squared_df = calculate_chi_squared(model, selected_model, exp_file_path, theoretical_saxs_uploads, 
-                                                   ligand_concentration, n_value, kd_range, receptor_concentration, upload_directory, kd_points)
+            # Save experimental SAXS data
+            exp_file_path = save_file(f"exp_saxs_{i+1}.dat", exp_saxs, session_dir, 'uploads/experimental')
+            
+            if selected_model == 'kds_saxs_mon_oligomer':
+                mon_file_path = save_file("mon_saxs.dat", theoretical_saxs_uploads[0]['props']['contents'], 
+                                        session_dir, 'uploads/theoretical')
+                dim_file_path = save_file("oligomer_saxs.dat", theoretical_saxs_uploads[1]['props']['contents'], 
+                                        session_dir, 'uploads/theoretical')
+                chi_squared_df = model.calculate(exp_file_path, mon_file_path, dim_file_path, 
+                                              ligand_concentration, n_value, kd_range, kd_points, session_dir)
+            else:
+                theoretical_files = [save_file(f"theo_saxs_{j+1}.dat", upload['props']['contents'], 
+                                            session_dir, 'uploads/theoretical')
+                                   for j, upload in enumerate(theoretical_saxs_uploads)]
+                chi_squared_df = model.calculate(exp_file_path, theoretical_files, receptor_concentration, 
+                                              ligand_concentration, n_value, kd_range, kd_points, session_dir)
+            
             chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
             results.append(chi_squared_df)
 
@@ -90,7 +105,7 @@ def calculate_chi_squared(model, selected_model, exp_file_path, theoretical_saxs
     else:
         raise ValueError(f"Unknown model: {selected_model}")
 
-def register_callbacks_analysis(app, upload_directory):
+def register_callbacks_analysis(app, get_session_dir):
     # First callback to show loading modal
     @app.callback(
         [Output('loading-modal', 'is_open'),
@@ -125,6 +140,7 @@ def register_callbacks_analysis(app, upload_directory):
          State('conc-max', 'value'),
          State('conc-points', 'value'),
          State('input-receptor-concentration', 'value'),
+         State('concentration-units', 'value'),
          State('experimental-data-store', 'data'),
          State('message-modal', 'is_open')],
         prevent_initial_call=True
@@ -132,7 +148,10 @@ def register_callbacks_analysis(app, upload_directory):
     def update_all(calculation_trigger, close_clicks, click_data,
                    selected_model, n_value, upload_container, theoretical_saxs_uploads,
                    kd_min, kd_max, kd_points, conc_min, conc_max, conc_points,
-                   receptor_concentration, stored_data, modal_is_open):
+                   receptor_concentration, units, stored_data, message_modal_open):
+        
+        # Get current session directory
+        session_dir = get_session_dir()
         
         ctx = dash.callback_context
         if not ctx.triggered:
@@ -159,20 +178,24 @@ def register_callbacks_analysis(app, upload_directory):
 
             try:
                 results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                                                               kd_range, receptor_concentration, upload_directory, kd_points)
+                                                               kd_range, receptor_concentration, session_dir, kd_points)
                 if results:
-                    chi_squared_plot = create_chi_squared_plot(results, concentration_colors)
-                    saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, upload_directory)
+                    chi_squared_plot = create_chi_squared_plot(results, concentration_colors, units=units)
+                    saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, session_dir, units=units)
                     
                     experimental_concentrations = [result['concentration'].unique()[0] for result in results]
                     
                     best_kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
                     fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
-                                                      receptor_concentration, experimental_concentrations, concentration_colors)
+                                                      receptor_concentration, experimental_concentrations, 
+                                                      concentration_colors, units=units)
                     
                     stored_data = {
                         'experimental_concentrations': experimental_concentrations,
-                        'concentration_colors': concentration_colors
+                        'concentration_colors': concentration_colors,
+                        'best_kd': best_kd,
+                        'chi2_values': [result['chi2'].min() for result in results],
+                        'units': units
                     }
                     
                     return True, html.Div('Analysis Complete!', className='message-success'), chi_squared_plot, fraction_plot, saxs_fit_plots, stored_data
@@ -192,7 +215,8 @@ def register_callbacks_analysis(app, upload_directory):
             concentration_colors = stored_data.get('concentration_colors', {})
             
             fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
-                                              receptor_concentration, experimental_concentrations, concentration_colors)
+                                              receptor_concentration, experimental_concentrations, 
+                                              concentration_colors, units=units)
             return False, '', dash.no_update, fraction_plot, dash.no_update, dash.no_update
 
         raise PreventUpdate
@@ -251,6 +275,66 @@ def register_callbacks_analysis(app, upload_directory):
         if figure is not None:
             return dcc.send_bytes(create_pdf(figure), "fraction_plot.pdf")
         return dash.no_update
+
+    @app.callback(
+        Output({'type': 'download-saxs-fit-csv', 'index': MATCH}, 'data'),
+        Input({'type': 'save-saxs-fit-csv', 'index': MATCH}, 'n_clicks'),
+        State('experimental-data-store', 'data'),
+        prevent_initial_call=True
+    )
+    def save_saxs_fit_csv(n_clicks, stored_data):
+        if n_clicks is None:
+            raise PreventUpdate
+        
+        # Get current session directory
+        session_dir = get_session_dir()
+        
+        ctx = dash.callback_context
+        button_id = ctx.triggered[0]['prop_id']
+        index = json.loads(button_id.split('.')[0])['index']
+        
+        # Get the fit data from the fits directory
+        fit_file = os.path.join(session_dir, 'fits', f'fit_{format_concentration(stored_data["experimental_concentrations"][index])}_{stored_data["best_kd"]}.fit')
+        fit_data = pd.read_csv(fit_file, sep='\s+', skiprows=1, names=['s', 'Iexp', 'sigma', 'Ifit'])
+        
+        return dcc.send_data_frame(fit_data.to_csv, f"saxs_fit_{index+1}.csv", index=False)
+
+    @app.callback(
+        Output({'type': 'download-saxs-fit-pdf', 'index': MATCH}, 'data'),
+        Input({'type': 'save-saxs-fit-pdf', 'index': MATCH}, 'n_clicks'),
+        State('experimental-data-store', 'data'),
+        prevent_initial_call=True
+    )
+    def save_saxs_fit_pdf(n_clicks, stored_data):
+        if n_clicks is None:
+            raise PreventUpdate
+        
+        # Get current session directory
+        session_dir = get_session_dir()
+        
+        ctx = dash.callback_context
+        button_id = ctx.triggered[0]['prop_id']
+        index = json.loads(button_id.split('.')[0])['index']
+        
+        # Get the concentration and color for this index
+        concentration = stored_data["experimental_concentrations"][index]
+        color = stored_data["concentration_colors"][concentration]
+        kd = stored_data["best_kd"]
+        chi2 = stored_data["chi2_values"][index]
+        
+        # Get the fit data from the fits directory
+        fit_file = os.path.join(session_dir, 'fits', f'fit_{format_concentration(concentration)}_{kd}.fit')
+        fit_data = pd.read_csv(fit_file, sep='\s+', skiprows=1, names=['s', 'Iexp', 'sigma', 'Ifit'])
+        
+        # Create plot with all required arguments
+        fig = create_single_saxs_fit_plot(fit_data, concentration, kd, chi2, color)
+        
+        # Convert to PDF
+        buffer = io.BytesIO()
+        pio.write_image(fig, buffer, format='pdf')
+        buffer.seek(0)
+        
+        return dcc.send_bytes(buffer.getvalue(), f"saxs_fit_{index+1}.pdf")
 
     def create_pdf(figure):
         buffer = io.BytesIO()
