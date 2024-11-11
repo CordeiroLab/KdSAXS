@@ -1,10 +1,12 @@
 import os
 import shutil
 from datetime import datetime, timedelta
+import threading
+import time
 from config import BASE_DIR
 from scripts.error_handling import logger
 
-def cleanup_old_sessions(days_to_keep=3):
+def cleanup_sessions(days_to_keep=3):
     """
     Clean up session directories older than specified days
     """
@@ -39,7 +41,14 @@ def cleanup_old_sessions(days_to_keep=3):
     except Exception as e:
         logger.error(f"Error during session cleanup: {str(e)}")
 
+def periodic_cleanup(interval_days=3):
+    while True:
+        cleanup_sessions()
+        time.sleep(interval_days * 24 * 60 * 60)
+
+def start_cleanup_thread():
+    cleanup_thread = threading.Thread(target=periodic_cleanup, daemon=True)
+    cleanup_thread.start()
+
 if __name__ == "__main__":
-    logger.info("Starting session cleanup")
-    cleanup_old_sessions()
-    logger.info("Session cleanup completed")
+    start_cleanup_thread()

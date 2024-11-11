@@ -11,11 +11,11 @@
 
 ## 💡 What is K<sub>D</sub>SAXS?
 
-K<sub>D</sub>SAXS leverages SAXS titration data to calculate the dissociation constant (Kᴅ) for self-assembly and binding equilibria, providing information on oligomeric state distributions. With its intuitive interface, KᴅSAXS addresses the challenges of analyzing heterogeneous and dynamic systems, such as protein oligomerization, transient complexes and intrinsically disordered proteins. Dive in and unlock the full potential of your SAXS data with KᴅSAXS!
+K<sub>D</sub>SAXS leverages SAXS titration data to calculate the dissociation constant (Kᴅ) for self-assembly and binding equilibria, providing information on oligomeric state distributions. With its intuitive interface, KᴅSAXS addresses the challenges of analyzing heterogeneous and dynamic systems, such as protein oligomerization, transient complexes and intrinsically disordered proteins. Dive in and unlock the full potential of your SAXS data with K<sub>D</sub>SAXS at [kdsaxs.itqb.unl.pt](https://kdsaxs.itqb.unl.pt/)
 
 <!-- [1](#ref1) -->
 
-## 🧰 How do I install K<sub>D</sub>SAXS?
+## 🧰 How do I install locally K<sub>D</sub>SAXS?
 
 1. ### Getting the repository
     -  Download this repository to your computer and execute in a terminal:

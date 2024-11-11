@@ -9,7 +9,7 @@ from layouts import create_main_layout
 from popovers import create_popovers
 from scripts.callbacks_analysis import register_callbacks_analysis
 from scripts.callbacks_upload import register_callbacks_upload
-from cleanup_sessions import cleanup_old_sessions  # Import the cleanup function
+from cleanup_sessions import start_cleanup_thread
 
 # Initialize the Dash app with Bootstrap theme
 app = Dash(__name__, 
@@ -21,7 +21,7 @@ server = app.server
 server.secret_key = os.urandom(24)  # For session management
 
 # Run cleanup when server starts
-cleanup_old_sessions()  # This will clean old sessions on server start
+start_cleanup_thread()
 
 # Create session directory middleware
 @server.before_request
