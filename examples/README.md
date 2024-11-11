@@ -27,7 +27,7 @@ avg_dim_ph8.int (upload in the second upload field)
 ### Expected χ² vs K<sub>D</sub> plot
 
 <p align="center">
-<img src="../assets/chi2vsKd_example_blg.png" width="80%"><img src="../assets/fractions_plot_example_blg.png" width="80%">
+<img src="../assets/chi2vsKd_example_blg.png" width="70%"><img src="../assets/fractions_plot_example_blg.png" width="70%">
 </p>
 
 
