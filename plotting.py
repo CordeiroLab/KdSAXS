@@ -212,7 +212,7 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
             y=[0, 1],
             mode='lines',
             line=dict(color=concentration_colors[conc], width=2, dash='dash'),
-            name=f'Conc. ({conc} {units})',
+            name=f'{conc} {units}',
             showlegend=True
         ))
     
