@@ -51,9 +51,11 @@ def format_concentration(concentration, precision=6):
     """
     Format concentration value consistently throughout the application.
     Args:
-        concentration (float): The concentration value
+        concentration (float or str): The concentration value
         precision (int): Number of decimal places to keep
     Returns:
         str: Formatted concentration string
     """
+    if isinstance(concentration, pd.DataFrame):
+        concentration = concentration['concentration'].iloc[0]
     return f"{float(concentration):.{precision}g}"

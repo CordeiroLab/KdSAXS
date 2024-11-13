@@ -249,6 +249,10 @@ def create_main_layout():
             ]),
             dbc.Row([
                 dbc.Col([
+                    # Instruction for chi² plot
+                    html.Div("Click on a Kd value to update the fractions plot and the SAXS data fits below", 
+                             className='upload-style', style={'fontWeight': 'bold', 'border': 'none'}),
+                    # Buttons for chi² plot
                     html.Div([
                         dbc.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='secondary-dash-button'),
                         dbc.Button('Save Chi2 Plot as PDF', id='save-chi2-pdf', className='secondary-dash-button'),
@@ -256,6 +260,9 @@ def create_main_layout():
                     dcc.Graph(id='chi2-plot')
                 ], md=6),
                 dbc.Col([
+                    # Empty div for alignment, without border
+                    html.Div("", style={'height': '60px', 'margin': '10px 0'}),  # Match upload-style height and margins
+                    # Buttons for fraction plot
                     html.Div([
                         dbc.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='secondary-dash-button'),
                         dbc.Button('Save Fraction Plot as PDF', id='save-fraction-pdf', className='secondary-dash-button'),

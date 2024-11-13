@@ -10,7 +10,7 @@ from models.calculations import MonomerOligomerCalculation, ProteinBindingCalcul
 import plotly.io as pio
 import plotly.express as px
 from scripts.utils import format_concentration, save_file, get_session_path
-
+from models.calculations import extract_chi_squared
 def create_chi_squared_plot(results, concentration_colors, units='µM'):
     if results:
         chi_squared_values = pd.concat(results)
@@ -57,24 +57,37 @@ def create_chi_squared_plot(results, concentration_colors, units='µM'):
         return fig
     return go.Figure()
 
-def create_saxs_fit_plots(results, concentration_colors, session_dir, units='µM'):
+def create_saxs_fit_plots(results_or_concentrations, concentration_colors, session_dir, kd=None, chi2_values=None, units='µM'):
     fit_plots_column1 = []
     fit_plots_column2 = []
 
-    fits_dir = get_session_path(session_dir, 'fits')
+    if isinstance(results_or_concentrations, list):
+        # Case when clicking on chi² plot
+        experimental_concentrations = results_or_concentrations
+        # Get chi² values from log files for clicked Kd
+        chi2_values = []
+        for concentration in experimental_concentrations:
+            log_file = os.path.join(session_dir, 'logs', f"oligomer_{format_concentration(concentration)}_{kd}.log")
+            chi2 = extract_chi_squared(log_file)
+            chi2_values.append(chi2)
+    else:
+        # Case for initial analysis
+        results = results_or_concentrations
+        experimental_concentrations = []
+        chi2_values = []
+        for result in results:
+            concentration = result['concentration'].iloc[0]
+            experimental_concentrations.append(concentration)
+            chi2_values.append(result['chi2'].min())
+        kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
 
-    for i, chi_squared_df in enumerate(results):
-        best_fit = chi_squared_df.loc[chi_squared_df['chi2'].idxmin()]
-        best_kd = best_fit['kd']
-        best_chi2 = best_fit['chi2']
-        best_concentration = best_fit['concentration']
-
-        fit_filename = f"fit_{format_concentration(best_concentration)}_{best_kd}.fit"
-        fit_filepath = os.path.join(fits_dir, fit_filename)
+    for i, concentration in enumerate(experimental_concentrations):
+        fit_filename = f"fit_{format_concentration(concentration)}_{kd}.fit"
+        fit_filepath = os.path.join(session_dir, 'fits', fit_filename)
 
         if os.path.exists(fit_filepath):
-            plot = create_single_saxs_fit_plot(fit_filepath, best_concentration, best_kd, best_chi2, 
-                                             concentration_colors[best_concentration], units)
+            plot = create_single_saxs_fit_plot(fit_filepath, concentration, kd, chi2_values[i], 
+                                             concentration_colors[format_concentration(concentration)], units)
             
             save_buttons = html.Div([
                 html.Div([

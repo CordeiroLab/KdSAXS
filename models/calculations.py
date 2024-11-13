@@ -68,7 +68,7 @@ class MonomerOligomerCalculation:
                     np.savetxt(theoretical_file, theoretical_sum_int)
                     
                     fit_file = os.path.join(fits_dir, f"fit_{format_concentration(concentration)}_{Kd}.fit")
-                    log_file = os.path.join(logs_dir, f"oligomer_{Kd}.log")
+                    log_file = os.path.join(logs_dir, f"oligomer_{format_concentration(concentration)}_{Kd}.log")
                     
                     cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un=2"
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -175,7 +175,7 @@ class ProteinBindingCalculation:
                     # Save files in session directories
                     theoretical_file = os.path.join(theoretical_dir, f"theoretical_{Kd}.int")
                     fit_file = os.path.join(fits_dir, f"fit_{format_concentration(ligand_concentration)}_{Kd}.fit")
-                    log_file = os.path.join(logs_dir, f"oligomer_{Kd}.log")
+                    log_file = os.path.join(logs_dir, f"oligomer_{format_concentration(ligand_concentration)}_{Kd}.log")
 
                     # Save theoretical intensity file in session directory
                     np.savetxt(theoretical_file, theoretical_saxs)

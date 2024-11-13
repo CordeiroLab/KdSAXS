@@ -16,6 +16,7 @@ from dash.exceptions import PreventUpdate
 import os
 from config import ATSAS_PATH
 import json
+from flask import session
 
 
 def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration):
@@ -142,16 +143,12 @@ def register_callbacks_analysis(app, get_session_dir):
          State('input-receptor-concentration', 'value'),
          State('concentration-units', 'value'),
          State('experimental-data-store', 'data'),
-         State('message-modal', 'is_open')],
-        prevent_initial_call=True
+         State('message-modal', 'is_open')]
     )
     def update_all(calculation_trigger, close_clicks, click_data,
                    selected_model, n_value, upload_container, theoretical_saxs_uploads,
                    kd_min, kd_max, kd_points, conc_min, conc_max, conc_points,
-                   receptor_concentration, units, stored_data, message_modal_open):
-        
-        # Get current session directory
-        session_dir = get_session_dir()
+                   receptor_concentration, units, stored_data, modal_is_open):
         
         ctx = dash.callback_context
         if not ctx.triggered:
@@ -178,17 +175,21 @@ def register_callbacks_analysis(app, get_session_dir):
 
             try:
                 results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, 
-                                                               kd_range, receptor_concentration, session_dir, kd_points)
+                                                               kd_range, receptor_concentration, session['session_dir'], kd_points)
                 if results:
                     chi_squared_plot = create_chi_squared_plot(results, concentration_colors, units=units)
-                    saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, session_dir, units=units)
+                    saxs_fit_plots = create_saxs_fit_plots(results, concentration_colors, session['session_dir'], units=units)
                     
                     experimental_concentrations = [result['concentration'].unique()[0] for result in results]
                     
-                    best_kd = results[0]['kd'].iloc[results[0]['chi2'].idxmin()]
+                    # Get chi² values from the average curve
+                    chi_squared_values = pd.concat(results)
+                    avg_chi_squared = chi_squared_values.groupby('kd')['chi2'].mean()
+                    best_kd = avg_chi_squared.index[avg_chi_squared.argmin()]
+                    
                     fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
-                                                      receptor_concentration, experimental_concentrations, 
-                                                      concentration_colors, units=units)
+                                                          receptor_concentration, experimental_concentrations, 
+                                                          concentration_colors, units=units)
                     
                     stored_data = {
                         'experimental_concentrations': experimental_concentrations,
@@ -214,12 +215,19 @@ def register_callbacks_analysis(app, get_session_dir):
             experimental_concentrations = stored_data.get('experimental_concentrations', [])
             concentration_colors = stored_data.get('concentration_colors', {})
             
+            # Create fraction plot with clicked Kd
             fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
                                               receptor_concentration, experimental_concentrations, 
                                               concentration_colors, units=units)
-            return False, '', dash.no_update, fraction_plot, dash.no_update, dash.no_update
+            
+            # Create SAXS fit plots for clicked Kd
+            saxs_fit_plots = create_saxs_fit_plots(experimental_concentrations, concentration_colors, 
+                                                 session['session_dir'], clicked_kd, 
+                                                 stored_data['chi2_values'], units=units)
+            
+            return False, '', dash.no_update, fraction_plot, saxs_fit_plots, dash.no_update
 
-        raise PreventUpdate
+        return False, '', dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     # Callback to close loading modal after calculations
     @app.callback(
