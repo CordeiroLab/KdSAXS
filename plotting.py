@@ -247,7 +247,7 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
 
     return fig
 
-def create_empty_fraction_plot(message="Please click on a Kd value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below."):
+def create_empty_fraction_plot(message="Please click on a Kd value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below. <br> <br> The Kd with the lowest χ², or the plot's elbow region when <br> no clear minimum is found, corresponds to the most likely Kd."):
     fig = go.Figure()
     fig.update_layout(
         showlegend=False,
