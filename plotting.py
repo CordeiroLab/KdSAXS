@@ -246,3 +246,26 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
     fig.update_xaxes(type=xscale)
 
     return fig
+
+def create_empty_fraction_plot(message="Please click on a Kd value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below."):
+    fig = go.Figure()
+    fig.update_layout(
+        showlegend=False,
+        template='simple_white',
+        height=400,
+        width=650,
+        annotations=[
+            dict(
+                text=message,
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+                font=dict(size=17, color="#007bff"),
+                align="center"
+            )
+        ],
+        margin=dict(t=50, b=50, l=50, r=50)
+    )
+    return fig

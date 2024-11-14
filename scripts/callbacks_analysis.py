@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from scripts.utils import save_file, format_concentration
 from models.model_factory import ModelFactory
 from scripts.error_handling import logger, handle_callback_errors
-from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot, create_single_saxs_fit_plot
+from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot, create_single_saxs_fit_plot, create_empty_fraction_plot
 import plotly.io as pio
 import io
 import time
@@ -187,9 +187,8 @@ def register_callbacks_analysis(app, get_session_dir):
                     avg_chi_squared = chi_squared_values.groupby('kd')['chi2'].mean()
                     best_kd = avg_chi_squared.index[avg_chi_squared.argmin()]
                     
-                    fraction_plot = create_fraction_plot(best_kd, n_value, concentration_range, selected_model, 
-                                                          receptor_concentration, experimental_concentrations, 
-                                                          concentration_colors, units=units)
+                    # Instead of creating fraction plot, create empty plot with instruction
+                    fraction_plot = create_empty_fraction_plot()
                     
                     stored_data = {
                         'experimental_concentrations': experimental_concentrations,
@@ -215,7 +214,7 @@ def register_callbacks_analysis(app, get_session_dir):
             experimental_concentrations = stored_data.get('experimental_concentrations', [])
             concentration_colors = stored_data.get('concentration_colors', {})
             
-            # Create fraction plot with clicked Kd
+            # Create fraction plot when Kd is clicked
             fraction_plot = create_fraction_plot(clicked_kd, n_value, concentration_range, selected_model, 
                                               receptor_concentration, experimental_concentrations, 
                                               concentration_colors, units=units)
