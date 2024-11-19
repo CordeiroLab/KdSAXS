@@ -11,6 +11,8 @@ import plotly.io as pio
 import plotly.express as px
 from scripts.utils import format_concentration, save_file, get_session_path
 from models.calculations import extract_chi_squared
+from scripts.error_handling import logger
+
 def create_chi_squared_plot(results, concentration_colors, units='µM'):
     if results:
         chi_squared_values = pd.concat(results)
@@ -64,12 +66,17 @@ def create_saxs_fit_plots(results_or_concentrations, concentration_colors, sessi
     if isinstance(results_or_concentrations, list):
         # Case when clicking on chi² plot
         experimental_concentrations = results_or_concentrations
-        # Get chi² values from log files for clicked Kd
-        chi2_values = []
-        for concentration in experimental_concentrations:
-            log_file = os.path.join(session_dir, 'logs', f"oligomer_{format_concentration(concentration)}_{kd}.log")
-            chi2 = extract_chi_squared(log_file)
-            chi2_values.append(chi2)
+        # Only try to read logs if we have a valid kd value
+        if kd is not None and chi2_values is None:
+            chi2_values = []
+            for concentration in experimental_concentrations:
+                log_file = os.path.join(session_dir, 'logs', f"oligomer_{format_concentration(concentration)}_{kd}.log")
+                try:
+                    chi2 = extract_chi_squared(log_file)
+                    chi2_values.append(chi2)
+                except FileNotFoundError:
+                    logger.debug(f"Log file not found for kd={kd}, concentration={concentration}")
+                    chi2_values.append(None)
     else:
         # Case for initial analysis
         results = results_or_concentrations
@@ -247,7 +254,7 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
 
     return fig
 
-def create_empty_fraction_plot(message="Please click on a Kd value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below. <br> <br> The Kd with the lowest χ², or the plot's elbow region when <br> no clear minimum is found, corresponds to the most likely Kd."):
+def create_empty_fraction_plot(message="Please click on a K<sub>D</sub> value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below. <br> <br> The K<sub>D</sub> with the lowest χ², or the plot's elbow region when <br> no clear minimum is found, corresponds to the most likely K<sub>D</sub>."):
     fig = go.Figure()
     fig.update_layout(
         showlegend=False,

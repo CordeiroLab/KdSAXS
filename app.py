@@ -15,6 +15,7 @@ from cleanup_sessions import start_cleanup_thread
 app = Dash(__name__, 
            external_stylesheets=[dbc.themes.BOOTSTRAP, 'https://use.fontawesome.com/releases/v5.8.1/css/all.css'])
 app._favicon = "./assets/favicon.ico"
+app.title = "KdSAXS"
 
 # Configure server
 server = app.server

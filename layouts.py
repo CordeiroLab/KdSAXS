@@ -80,6 +80,30 @@ def create_saxs_upload_section():
                     className="input-style",
                     style={'flex': '1'}
                 )
+            ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
+            html.Div([
+                html.Div([
+                    dcc.Upload(
+                        id={'type': 'upload-exp-saxs', 'index': 1},
+                        children=html.Div(['Drag and Drop or Select Experimental SAXS File']),
+                        className="upload-style",
+                        multiple=False
+                    ),
+                    html.I(className="fas fa-minus-circle", 
+                           id={'type': 'delete-saxs', 'index': 1},
+                           n_clicks=0,
+                           style={'position': 'absolute', 'top': '5px', 'right': '5px', 'cursor': 'pointer'})
+                ], style={'position': 'relative', 'flex': '3', 'marginRight': '10px'}),
+                dcc.Input(
+                    id={'type': 'input-concentration', 'index': 1},
+                    type='number',
+                    placeholder='Concentration',
+                    value=None,
+                    min=0,
+                    step=0.1,
+                    className="input-style",
+                    style={'flex': '1'}
+                )
             ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         ]),
         html.Button('Add another SAXS profile', id='add-saxs-button', n_clicks=0, className='dash-button'),
@@ -186,9 +210,8 @@ def create_instructions():
                 html.Sub("D"),
                 " value in the χ² vs K",
                 html.Sub("D"),
-                " plot the molecular fractions are displayed at the right side plot. The lowest χ² indicates the best predicted K",
-                html.Sub("D"),
-                " value."
+                " plot the molecular fractions are displayed at the right side plot.",
+                
             ]),
             html.Li("The inputted concentrations, chosen parameters for the simulation and the uploaded experimental and theoretical SAXS profiles should be self-consistent in units."),
             # html.Li([
@@ -198,7 +221,15 @@ def create_instructions():
             # ]),
 
             html.Li([
-                "To see how the app works, you can load the example data in the github repository ",
+                "To see how the app works, you can load the example data by clicking ",
+                       html.A("here", 
+                       id="load-example", 
+                       href="#", 
+                       style={'cursor': 'pointer', 'color': '#007bff'}, 
+                       n_clicks=0
+                ),
+                ", then go to the run analysis tab and check the expected results ",
+                
                 html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS/tree/main/examples/", target="_blank"),
                 ", or check detailed usage instructions ",
                 html.A("here", href="https://github.com/TiagoLopesGomes/KdSAXS#detailed-usage", target="_blank"),
@@ -249,9 +280,7 @@ def create_main_layout():
             ]),
             dbc.Row([
                 dbc.Col([
-                    # Instruction for chi² plot
-                    html.Div("Click on a Kd value to update the fractions plot and the SAXS data fits below", 
-                             className='upload-style', style={'fontWeight': 'bold', 'border': 'none'}),
+                    
                     # Buttons for chi² plot
                     html.Div([
                         dbc.Button("Save Chi2 Plot as CSV", id="save-chi2-csv", className='secondary-dash-button'),
@@ -260,8 +289,7 @@ def create_main_layout():
                     dcc.Graph(id='chi2-plot')
                 ], md=6),
                 dbc.Col([
-                    # Empty div for alignment, without border
-                    html.Div("", style={'height': '60px', 'margin': '10px 0'}),  # Match upload-style height and margins
+                    
                     # Buttons for fraction plot
                     html.Div([
                         dbc.Button("Save Fraction Plot as CSV", id="save-fraction-csv", className='secondary-dash-button'),

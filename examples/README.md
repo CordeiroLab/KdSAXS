@@ -1,33 +1,39 @@
 ## Loading example data
 
-Go to blg folder and upload the files below for the Beta-lactoglobulin at pH 8.
+Go to blg folder and upload the files below for the Beta-lactoglobulin at pH 7.
 
-### Experimental SAXS data
 
-Blac_1_16_Blac_1_subtraction_0.7_mgml_sample_Blac_1_160000-integrate_subtracted_gunier.dat @ 38 uM
+### Experimental SAXS data 
 
-Blac_1_15_Blac_1_subtraction_1.0_mgml_sample_Blac_1_150000-integrate_subtracted_gunier.dat @ 52,3 uM
+0.32_mgml_cut_28.dat @ 17.4 µM
 
-Blac_1_14_Blac_1_subtraction_1.3_mgml_sample_Blac_1_140000-integrate_subtracted_gunier.dat @ 70,6 uM
+0.48_mgml_cut_28.dat @ 26.1 µM
 
-Blac_1_12_Blac_1_subtraction_2.0_mgml_sample_Blac_1_120000-integrate_subtracted_gunier.dat @ 108,7 uM
+0.64_mgml_cut_28.dat @ 34.8 µM
 
-Blac_1_11_Blac_1_subtraction_2.5_mgml_sample_Blac_1_110000-integrate_subtracted_gunier.dat @ 136 uM
+0.96_mgml_cut_28.dat @ 52.2 µM
 
-Blac_1_9_Blac_1_subtraction_4.0_mgml_sample_Blac_1_90000-integrate_subtracted_gunier.dat @ 217,4 uM
+1.28_mgml_cut_28.dat @ 69.6 µM
 
-Blac_1_8_Blac_1_subtraction_5.0_mgml_sample_Blac_1_80000-integrate_subtracted_gunier.dat @ 271,7 uM
+1.44_mgml_cut_28.dat @ 78.3 µM
+
+1.92_mgml_cut_28.dat @ 104.3 µM
+
+2.4_mgml_cut_28.dat @ 130.4 µM
+
+2.88_mgml_cut_28.dat @ 156.5 µM
+
+4.8_mgml_cut_28.dat @ 260.9 µM
 
 ### Theoretical SAXS data
 
 avg_mon_ph8.int (upload in the first upload field)
-
 avg_dim_ph8.int (upload in the second upload field)
 
 ### Expected χ² vs K<sub>D</sub> plot
 
 <p align="center">
-<img src="../assets/chi2vsKd_example_blg.png" width="70%"><img src="../assets/fractions_plot_example_blg.png" width="70%">
+<img src="../assets/fraction_x2plot.png">
 </p>
 
 

@@ -44,7 +44,7 @@ formulas = {
     $$
     R = Receptor , \quad
     L = Ligand, \quad
-    n = stoichiometry
+    n = number \, of \, binding \, sites
     $$
     '''
 }
