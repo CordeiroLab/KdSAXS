@@ -27,8 +27,9 @@ Go to blg folder and upload the files below for the Beta-lactoglobulin at pH 7.
 
 ### Theoretical SAXS data
 
-avg_mon_ph8.int (upload in the first upload field)
-avg_dim_ph8.int (upload in the second upload field)
+avg_mon_ph7.int (upload in the first upload field)
+
+avg_dim_ph7.int (upload in the second upload field)
 
 ### Expected χ² vs K<sub>D</sub> plot
 
