@@ -2,7 +2,7 @@
 **/*.log
 **/*.fit
 **/*.dat
-**/*.int
+#**/*.int
 **/*.pyc
 ngrok_monitor*
 
@@ -20,3 +20,5 @@ __pycache__/
 
 # Keep .dat files in examples folder
 !examples/**/*.dat
+!examples/**/*.int
+
