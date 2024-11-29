@@ -9,6 +9,7 @@ from scripts.utils import save_file, format_concentration
 from models.model_factory import ModelFactory
 from scripts.error_handling import logger, handle_callback_errors
 from plotting import create_chi_squared_plot, create_saxs_fit_plots, create_fraction_plot, create_single_saxs_fit_plot, create_empty_fraction_plot
+from scripts.crysol_handler import CrysolHandler
 import plotly.io as pio
 import io
 import time
@@ -62,8 +63,12 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
                     mon_contents = theoretical_saxs_uploads[0]['props']['contents']
                     dim_contents = theoretical_saxs_uploads[1]['props']['contents']
                     
-                    # Check if these are PDB files
-                    if any('ATOM' in str(mon_contents) or 'HETATM' in str(mon_contents)):
+                    # Check if these are PDB files by checking content string
+                    is_pdb = False
+                    if isinstance(mon_contents, str):
+                        is_pdb = 'ATOM' in mon_contents or 'HETATM' in mon_contents
+                    
+                    if is_pdb:
                         # Handle as PDB files
                         crysol_handler = CrysolHandler(session_dir)
                         mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
