@@ -29,6 +29,9 @@ class CrysolHandler:
             if not pdb_file.lower().endswith('.pdb'):
                 raise ValueError("Invalid file format. Must be .pdb")
             
+            if not self.crysol_path:
+                raise RuntimeError("ATSAS path not found. Please set ATSAS environment variable.")
+            
             # Create command with default parameters
             cmd = [
                 self.crysol_path,
