@@ -58,17 +58,25 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
                     mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
                     dim_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_oligomer.int')
                 else:
-                    # Check if contents is a list (multiple files uploaded)
+                    # For regular SAXS profiles (not PDB)
                     mon_contents = theoretical_saxs_uploads[0]['props']['contents']
                     dim_contents = theoretical_saxs_uploads[1]['props']['contents']
                     
-                    if isinstance(mon_contents, list):
-                        mon_contents = mon_contents[0]  # Take first file if multiple uploaded
-                    if isinstance(dim_contents, list):
-                        dim_contents = dim_contents[0]
+                    # Check if these are PDB files
+                    if any('ATOM' in str(mon_contents) or 'HETATM' in str(mon_contents)):
+                        # Handle as PDB files
+                        crysol_handler = CrysolHandler(session_dir)
+                        mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
+                        dim_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_oligomer.int')
+                    else:
+                        # Handle as SAXS profiles
+                        if isinstance(mon_contents, list):
+                            mon_contents = mon_contents[0]
+                        if isinstance(dim_contents, list):
+                            dim_contents = dim_contents[0]
                         
-                    mon_file_path = save_file("mon_saxs.dat", mon_contents, session_dir, 'uploads/theoretical')
-                    dim_file_path = save_file("oligomer_saxs.dat", dim_contents, session_dir, 'uploads/theoretical')
+                        mon_file_path = save_file("mon_saxs.dat", mon_contents, session_dir, 'uploads/theoretical')
+                        dim_file_path = save_file("oligomer_saxs.dat", dim_contents, session_dir, 'uploads/theoretical')
                 
                 chi_squared_df = model.calculate(exp_file_path, mon_file_path, dim_file_path, 
                                             ligand_concentration, n_value, kd_range, kd_points, session_dir)
