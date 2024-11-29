@@ -63,7 +63,8 @@ def create_popovers():
             [
                 html.P("Please upload your experimental SAXS profiles and concentrations:"),
                 html.P("File format should have three columns: Momentum transfer or vector, Intensity and experimental error."),
-                html.P("Concentration units are per-user choice and should be self-consistent in units with the Kd and concentration ranges used for simulations.")
+                html.P("Concentration units are per-user choice and should be self-consistent in units with the Kd and concentration ranges used for simulations."),
+                
             ],
             target="exp-saxs-info",
             trigger="hover",
@@ -72,9 +73,10 @@ def create_popovers():
         ),
         dbc.Popover(
             [
-                html.P("Please upload your theoretical SAXS profiles:"),
-                html.P("File format should have two columns: Momentum transfer or vector and Intensity."),
-                html.P("Concentration units are per-user choice and should be self-consistent in units with the Kd and concentration ranges used for simulations.")
+                html.P("Please upload your theoretical SAXS profiles or PDB files:"),
+                html.P("File format, for SAXS profile, should have two columns: Momentum transfer or vector and Intensity."),
+                html.P("Concentration units are per-user choice and should be self-consistent in units with the Kd and concentration ranges used for simulations."),
+                html.P("If uploading PDB files it will automatically calculate and average the SAXS profiles for each state.")
             ],
             target="theo-saxs-info",
             trigger="hover",

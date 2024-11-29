@@ -6,7 +6,7 @@ import time
 from config import BASE_DIR
 from scripts.error_handling import logger
 
-def cleanup_sessions(days_to_keep=3):
+def cleanup_sessions(days_to_keep=2):
     """
     Clean up session directories older than specified days
     """

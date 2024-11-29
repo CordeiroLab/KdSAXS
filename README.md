@@ -55,7 +55,9 @@ K<sub>D</sub>SAXS leverages SAXS titration data to calculate the dissociation co
 
 - Choose between the two models, protein oligomerization and protein binding to fit your experimental data. 
 
-- Upload your SAXS profiles, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files.
+- Upload your SAXS profiles or PDB files, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files.
+
+- When uploading PDB files. K<sub>D</sub>SAXS will automatically calculate the theoretical SAXS profiles for each state, using Crysol, and averages them.
 
 - When you click on a Kd value in the χ² vs Kd plot the molecular fractions are displayed at the right side plot.
 
@@ -97,7 +99,7 @@ K<sub>D</sub>SAXS leverages SAXS titration data to calculate the dissociation co
       5.00e-03 6.29e+06
       ...
       ```
-    - **Note**: These should be generated from atomic structures using software like e.g. CRYSOL or FoXS
+    - **Note**: These should be generated from atomic structures (e.g PDBs) using software like e.g. CRYSOL or FoXS.
 
     ### Workflow for KdSAXS
 

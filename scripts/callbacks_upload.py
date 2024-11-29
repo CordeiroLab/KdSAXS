@@ -7,8 +7,11 @@ from scripts.utils import truncate_filename
 import os
 import base64
 from dash.exceptions import PreventUpdate
-from config import BASE_DIR
+from config import BASE_DIR, MAX_PDB_UPLOADS, MAX_PDB_SIZE
 from scripts.error_handling import logger
+from scripts.utils import save_file
+from flask import session
+from scripts.crysol_handler import CrysolHandler
 
 
 def register_callbacks_upload(app):
@@ -52,8 +55,8 @@ def register_callbacks_upload(app):
         return children
 
     @app.callback(
-        Output({'type': 'upload-exp-saxs', 'index': dash.MATCH}, 'children'),
-        [Input({'type': 'upload-exp-saxs', 'index': dash.MATCH}, 'filename')]
+        Output({'type': 'upload-exp-saxs', 'index': MATCH}, 'children'),
+        [Input({'type': 'upload-exp-saxs', 'index': MATCH}, 'filename')]
     )
     def update_exp_saxs_filename(filename):
         if filename:
@@ -67,7 +70,6 @@ def register_callbacks_upload(app):
         Output('n-input-container', 'style'),
         [Input('model-selection', 'value')]
     )
-
     def display_n_input(selected_model):
         if selected_model in ['kds_saxs_mon_oligomer', 'kds_saxs_oligomer_fitting']:
             return {'display': 'inline-block', 'marginRight': '20px'}
@@ -77,64 +79,208 @@ def register_callbacks_upload(app):
         Output('receptor-concentration-container', 'style'),
         [Input('model-selection', 'value')]
     )
-
     def toggle_receptor_concentration_input(selected_model):
         if selected_model == 'kds_saxs_oligomer_fitting':
-            return {'display': 'block', 'margin-top': '20px'}
-        else:
-            return {'display': 'none'}
-
+            return {'display': 'inline-block'}
+        return {'display': 'none'}
 
     @app.callback(
         Output('theoretical-saxs-upload-container', 'children'),
         [Input('model-selection', 'value'),
-         Input('input-n', 'value')]
+         Input('input-n', 'value'),
+         Input('theoretical-input-type', 'value')],
+        prevent_initial_call=False
     )
 
     
-    def update_theoretical_saxs_uploads(selected_model, n_value):
-        #print(f"selected_model: {selected_model}")
-        #print(f"n_value: {n_value}")
-
+    def update_theoretical_saxs_uploads(selected_model, n_value, use_pdb):
         if selected_model == 'kds_saxs_oligomer_fitting' and n_value is not None:
             uploads = []
-            for i in range(n_value + 2):
+            total_files = n_value + 2
+            
+            labels = ['Free Receptor']
+            labels.extend([f'Receptor-Ligand_{i}' for i in range(1, n_value+1)])
+            labels.append('Free Ligand')
+            
+            for i, label in enumerate(labels):
+                file_type = 'PDB' if use_pdb else 'SAXS'
                 uploads.append(dcc.Upload(
                     id={'type': 'upload-theoretical-saxs', 'index': i},
-                    children=html.Div([f'Drag and Drop or Select Theoretical SAXS File {i+1}']),
+                    children=html.Div([f'Drag and Drop or Select {label} {file_type} File']),
                     className='upload-style',
-                    multiple=False
+                    multiple=use_pdb,
+                    accept='.pdb' if use_pdb else '.dat,.int'
                 ))
             return uploads
         
         elif selected_model == 'kds_saxs_mon_oligomer':
+            file_type = 'PDB' if use_pdb else 'SAXS'
             return [
                 dcc.Upload(
                     id={'type': 'upload-theoretical-saxs', 'index': 0},
-                    children=html.Div(['Drag and Drop or Select Monomeric SAXS File']),
+                    children=html.Div([f'Drag and Drop or Select Monomeric {file_type} File']),
                     className='upload-style',
-                    multiple=False
+                    multiple=use_pdb,
+                    accept='.pdb' if use_pdb else '.dat,.int'
                 ),
                 dcc.Upload(
                     id={'type': 'upload-theoretical-saxs', 'index': 1},
-                    children=html.Div(['Drag and Drop or Select Oligomeric SAXS File']),
+                    children=html.Div([f'Drag and Drop or Select Oligomeric {file_type} File']),
                     className='upload-style',
-                    multiple=False
+                    multiple=use_pdb,
+                    accept='.pdb' if use_pdb else '.dat,.int'
                 )
             ]
-        else:
-            return []
+        return []
 
     @app.callback(
-        Output({'type': 'upload-theoretical-saxs', 'index': dash.MATCH}, 'children'),
-        [Input({'type': 'upload-theoretical-saxs', 'index': dash.MATCH}, 'filename')]
+        Output({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'contents', allow_duplicate=True),
+        [Input({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'contents')],
+        [State({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'filename'),
+         State('model-selection', 'value'),
+         State('theoretical-input-type', 'value'),
+         State('input-n', 'value'),
+         State({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'id')],
+        prevent_initial_call=True
     )
-    def update_theoretical_saxs_filename(filename):
+    def handle_theoretical_upload(contents, filename, selected_model, use_pdb, n_value, id_dict):
+        if not use_pdb or contents is None:
+            return contents
+
+        try:
+            # Add file count validation
+            if isinstance(filename, list) and len(filename) > MAX_PDB_UPLOADS:
+                raise PreventUpdate
+
+            # Add file size validation
+            if isinstance(filename, list):
+                for cont in contents:
+                    content_bytes = base64.b64decode(cont.split(',')[1])
+                    if len(content_bytes) > MAX_PDB_SIZE:
+                        raise PreventUpdate
+            else:
+                content_bytes = base64.b64decode(contents.split(',')[1])
+                if len(content_bytes) > MAX_PDB_SIZE:
+                    raise PreventUpdate
+
+            # Process the file only if it passes validation
+            index = id_dict['index']
+            if selected_model == 'kds_saxs_mon_oligomer':
+                state = 'monomer' if index == 0 else 'oligomer'
+            else:  # protein binding model
+                if index == 0:
+                    state = 'receptor'
+                elif index == n_value + 1:
+                    state = 'ligand'
+                else:
+                    state = f'receptor_ligand_{index}'
+            
+            # Save PDB files
+            pdb_files = []
+            if isinstance(filename, list):
+                for fname, cont in zip(filename, contents):
+                    pdb_path = save_file(
+                        name=fname,
+                        content=cont,
+                        directory=session['session_dir'],
+                        file_type='pdb',
+                        model=selected_model,
+                        state=state
+                    )
+                    pdb_files.append(pdb_path)
+            
+                # Process PDbs with CRYSOL and average
+                crysol_handler = CrysolHandler(session['session_dir'])
+                saxs_profile = crysol_handler.process_multiple_pdbs(pdb_files, state)
+            else:
+                # Single PDB
+                pdb_path = save_file(
+                    name=filename,
+                    content=contents,
+                    directory=session['session_dir'],
+                    file_type='pdb',
+                    model=selected_model,
+                    state=state
+                )
+                crysol_handler = CrysolHandler(session['session_dir'])
+                saxs_profile = crysol_handler.run_crysol(pdb_path)
+
+            # Read profile for UI
+            with open(saxs_profile, 'rb') as f:
+                content = f.read()
+            return f'data:text/plain;base64,{base64.b64encode(content).decode()}'
+        
+        except Exception as e:
+            logger.error(f"Error processing PDB files: {str(e)}")
+            raise PreventUpdate
+
+    @app.callback(
+        Output({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'children'),
+        [Input({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'filename'),
+         Input({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'contents')],
+        [State('theoretical-input-type', 'value'),
+         State('model-selection', 'value'),
+         State('input-n', 'value'),
+         State({'type': 'upload-theoretical-saxs', 'index': MATCH}, 'id')],
+        prevent_initial_call=True
+    )
+    def update_filename_display(filename, contents, use_pdb, selected_model, n_value, id_dict):
         if filename:
+            if use_pdb:
+                if isinstance(filename, list):
+                    if len(filename) > MAX_PDB_UPLOADS:
+                        return html.Div([f"Error: Maximum {MAX_PDB_UPLOADS} files allowed"], style={'color': 'red'})
+                    try:
+                        # Only check file size if contents is available
+                        if contents and isinstance(contents, list):
+                            for cont in contents:
+                                if cont:  # Check if content exists
+                                    content_bytes = base64.b64decode(cont.split(',')[1])
+                                    if len(content_bytes) > MAX_PDB_SIZE:
+                                        return html.Div([f"Error: File exceeds {MAX_PDB_SIZE/1024/1024:.1f}MB limit"], 
+                                                      style={'color': 'red'})
+                        # If all checks pass, just show number of files
+                        return html.Div([f"{len(filename)} PDB files uploaded"])
+                    except Exception as e:
+                        logger.error(f"Error in update_filename_display: {str(e)}")
+                        return html.Div([f"{len(filename)} PDB files uploaded"])  # Still show count even if validation fails
+                else:
+                    try:
+                        # For single file, only check size if content is available
+                        if contents:
+                            content_bytes = base64.b64decode(contents.split(',')[1])
+                            if len(content_bytes) > MAX_PDB_SIZE:
+                                return html.Div([f"Error: File exceeds {MAX_PDB_SIZE/1024/1024:.1f}MB limit"], 
+                                              style={'color': 'red'})
+                        return html.Div([
+                            html.Span(filename, className='truncated-filename', title=filename)
+                        ])
+                    except Exception as e:
+                        logger.error(f"Error in update_filename_display: {str(e)}")
+                        return html.Div([
+                            html.Span(filename, className='truncated-filename', title=filename)
+                        ])
+
+            # For regular SAXS files, just show the filename
             return html.Div([
                 html.Span(filename, className='truncated-filename', title=filename)
             ])
-        return html.Div(['Drag and Drop or Select Theoretical SAXS File'])
+
+        # Default text when no file is selected
+        index = id_dict['index'] if id_dict else 0
+        file_type = 'PDB' if use_pdb else 'SAXS'
+        
+        if selected_model == 'kds_saxs_mon_oligomer':
+            label = 'Monomeric' if index == 0 else 'Oligomeric'
+        else:
+            if index == 0:
+                label = 'Free Receptor'
+            elif index == n_value + 1:
+                label = 'Free Ligand'
+            else:
+                label = f'Receptor-Ligand_{index}'
+            
+        return html.Div([f'Drag and Drop or Select {label} {file_type} File{"(s)" if use_pdb else ""}'])
 
     @app.callback(
         Output('saxs-upload-container', 'children', allow_duplicate=True),
@@ -181,8 +327,8 @@ def register_callbacks_upload(app):
 
     @app.callback(
         [Output('saxs-upload-container', 'children', allow_duplicate=True),
-         Output({'type': 'upload-theoretical-saxs', 'index': 0}, 'contents'),
-         Output({'type': 'upload-theoretical-saxs', 'index': 1}, 'contents'),
+         Output({'type': 'upload-theoretical-saxs', 'index': 0}, 'contents', allow_duplicate=True),
+         Output({'type': 'upload-theoretical-saxs', 'index': 1}, 'contents', allow_duplicate=True),
          Output({'type': 'upload-theoretical-saxs', 'index': 0}, 'filename'),
          Output({'type': 'upload-theoretical-saxs', 'index': 1}, 'filename'),
          Output('example-data-store', 'data')],
@@ -216,17 +362,17 @@ def register_callbacks_upload(app):
 
 
 
-            '''# Load theoretical files not examples
-            mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph3/theoretical_saxs','avg_mon_ph3.int')     #change here
+            ####################################### Load files not GitHub examples ########################################################
+
+            mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_mon_ph7.int')     #change here
             with open(mon_path, 'rb') as f:
                 mon_content = f.read()
             mon_encoded = base64.b64encode(mon_content).decode()
             
-            dim_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph3/theoretical_saxs','avg_dim_ph3.int')     #change here
+            dim_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_dim_ph7.int')     #change here
             with open(dim_path, 'rb') as f:
                 dim_content = f.read()
             dim_encoded = base64.b64encode(dim_content).decode()
-'''
 
 
             # All concentrations and files
@@ -271,7 +417,6 @@ def register_callbacks_upload(app):
 
 
             #ph3 macias lab
-
             '''all_concentrations = [16.3, 27.2, 38.0, 54.3, 70.7, 81.5, 108.7, 135.9, 163.0, 217.4]
             
             all_files = [
@@ -295,8 +440,8 @@ def register_callbacks_upload(app):
             for i, (filename, concentration) in enumerate(zip(all_files, all_concentrations)):
                 # Load experimental file content for examples and not examples files
 
-                file_path = os.path.join(BASE_DIR, 'examples', 'blg', 'exp_saxs_ph7', filename)
-                #file_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph3/experimental_saxs', filename)     #change here
+                #file_path = os.path.join(BASE_DIR, 'examples', 'blg', 'exp_saxs_ph7', filename)
+                file_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/experimental_saxs', filename)     #change here
 
                 with open(file_path, 'rb') as f:
                     content = f.read()
@@ -352,6 +497,17 @@ def register_callbacks_upload(app):
         except Exception as e:
             logger.error(f"Error loading example files: {str(e)}")
             raise PreventUpdate
+
+    def get_state_from_index(selected_model, index, n_value):
+        if selected_model == 'kds_saxs_mon_oligomer':
+            return 'monomer' if index == 0 else 'oligomer'
+        else:
+            if index == 0:
+                return 'receptor'
+            elif index == n_value + 1:
+                return 'ligand'
+            else:
+                return f'receptor_ligand_{index}'
 
 
 

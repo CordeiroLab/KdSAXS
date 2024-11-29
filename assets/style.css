@@ -1,0 +1,47 @@
+/* File Header Summary Styles */
+.files-header {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.files-header:hover {
+    background-color: #e9ecef;
+}
+
+.files-collapse {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 4px;
+}
+
+/* Delete button hover effect */
+button.delete-pdb:hover {
+    opacity: 0.7;
+}
+
+/* File display styles */
+.delete-button:hover {
+    opacity: 0.7;
+}
+
+.delete-button:focus {
+    outline: none;
+}
+
+/* Ensure upload area is clearly separated */
+.upload-area {
+    border: 2px dashed #cccccc;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.upload-area:hover {
+    border-color: #666666;
+} 

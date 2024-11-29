@@ -369,3 +369,170 @@ html, body {
     overflow-x: auto;
     overflow-y: hidden;
 }
+
+.no-propagation {
+    pointer-events: none;
+}
+
+.button-propagation {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1000;
+}
+
+.file-counter {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+}
+
+.file-counter:hover {
+    background-color: #0056b3;
+}
+
+.file-viewer-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    background: transparent;
+    padding: 5px;
+}
+
+.file-viewer-button {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 0.9em;
+}
+
+.file-viewer-button:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.upload-container {
+    position: relative;
+}
+
+/* Tab styling */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #495057;
+    padding: 10px 20px;
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border: none;
+    color: #007bff;
+}
+
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    background-color: transparent;
+    border-bottom: 2px solid #007bff;
+    margin-bottom: -2px;
+}
+
+/* View container styling */
+#saxs-view-container {
+    min-height: 200px;
+    padding: 15px;
+}
+
+.file-card {
+    transition: all 0.2s ease;
+}
+
+.file-card:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.delete-button {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.delete-button:hover {
+    opacity: 1;
+}
+
+/* Upload container in tab */
+#saxs-upload-container {
+    padding: 15px 0;
+}
+
+/* Tab content container */
+.tab-content {
+    background: white;
+    border-radius: 0 0 4px 4px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+/* Add this to your existing CSS */
+.view-files-button {
+    pointer-events: auto !important;
+}
+
+.view-files-button:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Add these styles for the view files functionality */
+.view-files-container {
+    position: relative;
+    z-index: 1000;
+}
+
+.view-files-container button {
+    pointer-events: auto;
+}
+
+/* Modal styles */
+.modal {
+    z-index: 1050;
+}
+
+.modal-backdrop {
+    z-index: 1040;
+}
+
+/* File display styles */
+.delete-button:hover {
+    opacity: 0.7;
+}
+
+.delete-button:focus {
+    outline: none;
+}
+
+/* Ensure upload area is clearly separated */
+.upload-area {
+    border: 2px dashed #cccccc;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.upload-area:hover {
+    border-color: #666666;
+}

@@ -112,24 +112,23 @@ def create_saxs_upload_section():
 def create_theoretical_saxs_section():
     return html.Div([
         html.Div([
-            "Upload theoretical SAXS profiles:",
+            "Upload theoretical SAXS profiles or PDB files (max 20 PDB files per state):",
             html.Sup(html.I(className="fas fa-info-circle", id="theo-saxs-info", style={'marginLeft': '5px'}))
         ], className="centered-bold-text"),
-        html.Div(id='theoretical-saxs-upload-container', children=[
-            dcc.Upload(
-                id={'type': 'upload-theoretical-saxs', 'index': 0},
-                children=html.Div(['Drag and Drop or Select Monomer SAXS File']),
-                className='upload-style',
-                multiple=False
+        
+        # Add toggle switch
+        html.Div([
+            dbc.Switch(
+                id='theoretical-input-type',
+                label="Upload PDB files instead of SAXS profiles",
+                value=False,
+                className='mb-3'
             ),
-            dcc.Upload(
-                id={'type': 'upload-theoretical-saxs', 'index': 1},
-                children=html.Div(['Drag and Drop or Select oligomer SAXS File']),
-                className='upload-style',
-                multiple=False
-            )
         ]),
-        html.Div(id='example-file-display')  # New div to display the example file name
+        
+        # Container will be populated by callback based on model and toggle state
+        html.Div(id='theoretical-saxs-upload-container'),
+        html.Div(id='example-file-display')
     ], className="section-frame section-frame-2")
 
 def create_kd_selection_section():
@@ -200,7 +199,12 @@ def create_instructions():
                 html.Sub("D"),
                 html.Span(") from SAXS experiments.")
             ]),
-            html.Li("Upload your SAXS profiles, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files."),
+            html.Li("Upload your SAXS profiles or PDB files, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files."),
+            html.Li(["When uploading PDB files, ",
+                html.Span("K"),
+                html.Sub("D"),
+                html.Span("SAXS will automatically calculate and average the SAXS profiles for each state."),
+            ]),
             html.Li([
                 "Choose between: ",
                 dbc.Button("Monomer-Oligomer ", id="popover-mon-oligomer", color="link"),

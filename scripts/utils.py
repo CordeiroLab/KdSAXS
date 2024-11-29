@@ -3,19 +3,33 @@ import base64
 import pandas as pd
 import plotly.graph_objects as go
 
-def save_file(name, content, directory, subdir=None):
+def save_file(name, content, directory, subdir=None, file_type=None, model=None, state=None):
     """
     Decode and store a file uploaded with Plotly Dash.
     Args:
         name: filename
         content: file content
         directory: session directory
-        subdir: subdirectory within session directory (e.g., 'uploads/experimental')
+        subdir: subdirectory within session directory
+        file_type: type of file ('pdb', 'saxs')
+        model: model type ('kds_saxs_mon_oligomer', 'kds_saxs_oligomer_fitting')
+        state: state identifier ('monomer', 'oligomer', 'receptor', etc.)
     """
-    if subdir:
-        save_dir = os.path.join(directory, subdir)
+    if file_type == 'pdb':
+        if model == 'kds_saxs_mon_oligomer':
+            # Handle monomer/oligomer states
+            state_dir = 'monomer' if state == 'monomer' else 'oligomer'
+            save_dir = os.path.join(directory, "pdbs", state_dir)
+        else:
+            # Handle protein binding states
+            if state == 'receptor':
+                save_dir = os.path.join(directory, "pdbs", "receptor")
+            elif state == 'ligand':
+                save_dir = os.path.join(directory, "pdbs", "ligand")
+            else:
+                save_dir = os.path.join(directory, "pdbs", "receptor_ligand")
     else:
-        save_dir = directory
+        save_dir = os.path.join(directory, subdir) if subdir else directory
         
     os.makedirs(save_dir, exist_ok=True)
     

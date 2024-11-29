@@ -53,19 +53,41 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
             exp_file_path = save_file(f"exp_saxs_{i+1}.dat", exp_saxs, session_dir, 'uploads/experimental')
             
             if selected_model == 'kds_saxs_mon_oligomer':
-                mon_file_path = save_file("mon_saxs.dat", theoretical_saxs_uploads[0]['props']['contents'], 
-                                        session_dir, 'uploads/theoretical')
-                dim_file_path = save_file("oligomer_saxs.dat", theoretical_saxs_uploads[1]['props']['contents'], 
-                                        session_dir, 'uploads/theoretical')
+                if theoretical_saxs_uploads[0].get('is_pdb_calculated', False):
+                    # Use calculated profiles from CRYSOL
+                    mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
+                    dim_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_oligomer.int')
+                else:
+                    # Check if contents is a list (multiple files uploaded)
+                    mon_contents = theoretical_saxs_uploads[0]['props']['contents']
+                    dim_contents = theoretical_saxs_uploads[1]['props']['contents']
+                    
+                    if isinstance(mon_contents, list):
+                        mon_contents = mon_contents[0]  # Take first file if multiple uploaded
+                    if isinstance(dim_contents, list):
+                        dim_contents = dim_contents[0]
+                        
+                    mon_file_path = save_file("mon_saxs.dat", mon_contents, session_dir, 'uploads/theoretical')
+                    dim_file_path = save_file("oligomer_saxs.dat", dim_contents, session_dir, 'uploads/theoretical')
+                
                 chi_squared_df = model.calculate(exp_file_path, mon_file_path, dim_file_path, 
-                                              ligand_concentration, n_value, kd_range, kd_points, session_dir)
+                                            ligand_concentration, n_value, kd_range, kd_points, session_dir)
             else:
-                theoretical_files = [save_file(f"theo_saxs_{j+1}.dat", upload['props']['contents'], 
-                                            session_dir, 'uploads/theoretical')
-                                   for j, upload in enumerate(theoretical_saxs_uploads)]
+                if theoretical_saxs_uploads[0].get('is_pdb_calculated', False):
+                    # Use calculated profiles from CRYSOL
+                    theoretical_files = [
+                        os.path.join(session_dir, 'pdbs', 'averaged_profiles', f'avg_receptor_{i}.int')
+                        for i in range(n_value + 2)
+                    ]
+                else:
+                    # Use uploaded SAXS profiles
+                    theoretical_files = [save_file(f"theo_saxs_{j+1}.dat", upload['props']['contents'], 
+                                              session_dir, 'uploads/theoretical')
+                                     for j, upload in enumerate(theoretical_saxs_uploads)]
+                
                 chi_squared_df = model.calculate(exp_file_path, theoretical_files, receptor_concentration, 
-                                              ligand_concentration, n_value, kd_range, kd_points, session_dir)
-            
+                                            ligand_concentration, n_value, kd_range, kd_points, session_dir)
+
             chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
             results.append(chi_squared_df)
 
@@ -166,6 +188,10 @@ def register_callbacks_analysis(app, get_session_dir):
 
             if None in [kd_min, kd_max, kd_points, conc_min, conc_max, conc_points]:
                 return True, 'Please fill in all Kd and concentration fields.', dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+            # Create new session for this analysis
+            from config import create_session_dir
+            session['session_dir'] = create_session_dir()
 
             kd_range = (kd_min, kd_max)
             concentration_range = np.linspace(conc_min, conc_max, conc_points)
