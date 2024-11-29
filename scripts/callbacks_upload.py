@@ -364,7 +364,7 @@ def register_callbacks_upload(app):
 
             ####################################### Load files not GitHub examples ########################################################
 
-            mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_mon_ph7.int')     #change here
+            '''mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_mon_ph7.int')     #change here
             with open(mon_path, 'rb') as f:
                 mon_content = f.read()
             mon_encoded = base64.b64encode(mon_content).decode()
@@ -372,7 +372,7 @@ def register_callbacks_upload(app):
             dim_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_dim_ph7.int')     #change here
             with open(dim_path, 'rb') as f:
                 dim_content = f.read()
-            dim_encoded = base64.b64encode(dim_content).decode()
+            dim_encoded = base64.b64encode(dim_content).decode()'''
 
 
             # All concentrations and files
@@ -440,8 +440,8 @@ def register_callbacks_upload(app):
             for i, (filename, concentration) in enumerate(zip(all_files, all_concentrations)):
                 # Load experimental file content for examples and not examples files
 
-                #file_path = os.path.join(BASE_DIR, 'examples', 'blg', 'exp_saxs_ph7', filename)
-                file_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/experimental_saxs', filename)     #change here
+                file_path = os.path.join(BASE_DIR, 'examples', 'blg', 'exp_saxs_ph7', filename)
+                #file_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/experimental_saxs', filename)     #change here
 
                 with open(file_path, 'rb') as f:
                     content = f.read()
