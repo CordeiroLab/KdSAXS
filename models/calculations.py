@@ -181,7 +181,7 @@ class ProteinBindingCalculation:
                     np.savetxt(theoretical_file, theoretical_saxs)
 
                     # Run ATSAS oligomer with session directory paths
-                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un=1"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un=2"
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                     
                     chi_squared = extract_chi_squared(log_file)

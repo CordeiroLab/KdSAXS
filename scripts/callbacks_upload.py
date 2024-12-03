@@ -163,53 +163,9 @@ def register_callbacks_upload(app):
                 if len(content_bytes) > MAX_PDB_SIZE:
                     raise PreventUpdate
 
-            # Process the file only if it passes validation
-            index = id_dict['index']
-            if selected_model == 'kds_saxs_mon_oligomer':
-                state = 'monomer' if index == 0 else 'oligomer'
-            else:  # protein binding model
-                if index == 0:
-                    state = 'receptor'
-                elif index == n_value + 1:
-                    state = 'ligand'
-                else:
-                    state = f'receptor_ligand_{index}'
-            
-            # Save PDB files
-            pdb_files = []
-            if isinstance(filename, list):
-                for fname, cont in zip(filename, contents):
-                    pdb_path = save_file(
-                        name=fname,
-                        content=cont,
-                        directory=session['session_dir'],
-                        file_type='pdb',
-                        model=selected_model,
-                        state=state
-                    )
-                    pdb_files.append(pdb_path)
-            
-                # Process PDbs with CRYSOL and average
-                crysol_handler = CrysolHandler(session['session_dir'])
-                saxs_profile = crysol_handler.process_multiple_pdbs(pdb_files, state)
-            else:
-                # Single PDB
-                pdb_path = save_file(
-                    name=filename,
-                    content=contents,
-                    directory=session['session_dir'],
-                    file_type='pdb',
-                    model=selected_model,
-                    state=state
-                )
-                crysol_handler = CrysolHandler(session['session_dir'])
-                saxs_profile = crysol_handler.run_crysol(pdb_path)
+            # Just return the raw contents - store metadata in a different way
+            return contents
 
-            # Read profile for UI
-            with open(saxs_profile, 'rb') as f:
-                content = f.read()
-            return f'data:text/plain;base64,{base64.b64encode(content).decode()}'
-        
         except Exception as e:
             logger.error(f"Error processing PDB files: {str(e)}")
             raise PreventUpdate
@@ -497,17 +453,6 @@ def register_callbacks_upload(app):
         except Exception as e:
             logger.error(f"Error loading example files: {str(e)}")
             raise PreventUpdate
-
-    def get_state_from_index(selected_model, index, n_value):
-        if selected_model == 'kds_saxs_mon_oligomer':
-            return 'monomer' if index == 0 else 'oligomer'
-        else:
-            if index == 0:
-                return 'receptor'
-            elif index == n_value + 1:
-                return 'ligand'
-            else:
-                return f'receptor_ligand_{index}'
 
 
 

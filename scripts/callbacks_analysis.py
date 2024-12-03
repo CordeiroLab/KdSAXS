@@ -18,6 +18,7 @@ import os
 from config import ATSAS_PATH
 import json
 from flask import session
+from scripts.utils import get_state_from_index
 
 
 def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration):
@@ -37,6 +38,9 @@ def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_
     return errors
 
 def process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, session_dir, kd_points):
+    logger.debug(f"Starting process_saxs_data with session_dir: {session_dir}")
+    logger.debug(f"Model: {selected_model}")
+    
     model = ModelFactory.get_model(selected_model)
     results = []
     concentration_colors = {}
@@ -50,59 +54,100 @@ def process_saxs_data(selected_model, n_value, upload_container, theoretical_sax
                 color_index = len(concentration_colors) % len(color_sequence)
                 concentration_colors[formatted_conc] = color_sequence[color_index]
 
-            # Save experimental SAXS data
             exp_file_path = save_file(f"exp_saxs_{i+1}.dat", exp_saxs, session_dir, 'uploads/experimental')
             
             if selected_model == 'kds_saxs_mon_oligomer':
-                if theoretical_saxs_uploads[0].get('is_pdb_calculated', False):
-                    # Use calculated profiles from CRYSOL
-                    mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
-                    dim_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_oligomer.int')
+                if 'props' in theoretical_saxs_uploads[0] and isinstance(theoretical_saxs_uploads[0]['props'].get('contents'), list):
+                    logger.debug("Processing PDB files")
+                    crysol_handler = CrysolHandler(session_dir)
+                    
+                    # Process monomer PDbs
+                    mon_files = []
+                    for cont in theoretical_saxs_uploads[0]['props']['contents']:
+                        pdb_path = save_file(
+                            name=f"pdb_mon_{len(mon_files)}.pdb",
+                            content=cont,
+                            directory=session_dir,
+                            file_type='pdb',
+                            model=selected_model,
+                            state='monomer'
+                        )
+                        mon_files.append(pdb_path)
+                    mon_file_path = crysol_handler.process_multiple_pdbs(mon_files, 'monomer')
+                    
+                    # Process oligomer PDbs
+                    dim_files = []
+                    for cont in theoretical_saxs_uploads[1]['props']['contents']:
+                        pdb_path = save_file(
+                            name=f"pdb_dim_{len(dim_files)}.pdb",
+                            content=cont,
+                            directory=session_dir,
+                            file_type='pdb',
+                            model=selected_model,
+                            state='oligomer'
+                        )
+                        dim_files.append(pdb_path)
+                    dim_file_path = crysol_handler.process_multiple_pdbs(dim_files, 'oligomer')
                 else:
-                    # For regular SAXS profiles (not PDB)
+                    logger.debug("Processing regular SAXS profiles")
                     mon_contents = theoretical_saxs_uploads[0]['props']['contents']
                     dim_contents = theoretical_saxs_uploads[1]['props']['contents']
-                    
-                    # Check if these are PDB files by checking content string
-                    is_pdb = False
-                    if isinstance(mon_contents, str):
-                        is_pdb = 'ATOM' in mon_contents or 'HETATM' in mon_contents
-                    
-                    if is_pdb:
-                        # Handle as PDB files
-                        crysol_handler = CrysolHandler(session_dir)
-                        mon_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_monomer.int')
-                        dim_file_path = os.path.join(session_dir, 'pdbs', 'averaged_profiles', 'avg_oligomer.int')
-                    else:
-                        # Handle as SAXS profiles
-                        if isinstance(mon_contents, list):
-                            mon_contents = mon_contents[0]
-                        if isinstance(dim_contents, list):
-                            dim_contents = dim_contents[0]
-                        
-                        mon_file_path = save_file("mon_saxs.dat", mon_contents, session_dir, 'uploads/theoretical')
-                        dim_file_path = save_file("oligomer_saxs.dat", dim_contents, session_dir, 'uploads/theoretical')
-                
-                chi_squared_df = model.calculate(exp_file_path, mon_file_path, dim_file_path, 
-                                            ligand_concentration, n_value, kd_range, kd_points, session_dir)
-            else:
-                if theoretical_saxs_uploads[0].get('is_pdb_calculated', False):
-                    # Use calculated profiles from CRYSOL
-                    theoretical_files = [
-                        os.path.join(session_dir, 'pdbs', 'averaged_profiles', f'avg_receptor_{i}.int')
-                        for i in range(n_value + 2)
-                    ]
-                else:
-                    # Use uploaded SAXS profiles
-                    theoretical_files = [save_file(f"theo_saxs_{j+1}.dat", upload['props']['contents'], 
-                                              session_dir, 'uploads/theoretical')
-                                     for j, upload in enumerate(theoretical_saxs_uploads)]
-                
-                chi_squared_df = model.calculate(exp_file_path, theoretical_files, receptor_concentration, 
-                                            ligand_concentration, n_value, kd_range, kd_points, session_dir)
+                    mon_file_path = save_file("mon_saxs.dat", mon_contents, session_dir, 'uploads/theoretical')
+                    dim_file_path = save_file("oligomer_saxs.dat", dim_contents, session_dir, 'uploads/theoretical')
 
-            chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
-            results.append(chi_squared_df)
+                chi_squared_df = model.calculate(exp_file_path, mon_file_path, dim_file_path, 
+                                            float(formatted_conc), n_value, kd_range, kd_points, session_dir)
+                # Format concentration in results DataFrame
+                chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
+                results.append(chi_squared_df)
+            else:  # protein binding model
+                if 'props' in theoretical_saxs_uploads[0] and isinstance(theoretical_saxs_uploads[0]['props'].get('contents'), list):
+                    logger.debug("Processing PDB files for protein binding model")
+                    crysol_handler = CrysolHandler(session_dir)
+                    theoretical_files = []
+                    
+                    for j, upload in enumerate(theoretical_saxs_uploads):
+                        state = get_state_from_index(selected_model, j, n_value)
+                        pdb_files = []
+                        
+                        for cont in upload['props']['contents']:
+                            pdb_path = save_file(
+                                name=f"pdb_{state}_{len(pdb_files)}.pdb",
+                                content=cont,
+                                directory=session_dir,
+                                file_type='pdb',
+                                model=selected_model,
+                                state=state
+                            )
+                            pdb_files.append(pdb_path)
+                        
+                        # Process PDbs with CRYSOL and average
+                        theo_file_path = crysol_handler.process_multiple_pdbs(pdb_files, state)
+                        theoretical_files.append(theo_file_path)
+                else:
+                    # Handle regular SAXS profiles
+                    theoretical_files = []
+                    for j, upload in enumerate(theoretical_saxs_uploads):
+                        theo_file_path = save_file(
+                            f"theo_saxs_{j+1}.dat", 
+                            upload['props']['contents'], 
+                            session_dir, 
+                            'uploads/theoretical'
+                        )
+                        theoretical_files.append(theo_file_path)
+                
+                chi_squared_df = model.calculate(
+                    exp_file_path, 
+                    theoretical_files,
+                    receptor_concentration,
+                    float(formatted_conc),
+                    n_value,
+                    kd_range,
+                    kd_points,
+                    session_dir
+                )
+                chi_squared_df['concentration'] = chi_squared_df['concentration'].apply(format_concentration)
+                results.append(chi_squared_df)
 
     return results, concentration_colors
 

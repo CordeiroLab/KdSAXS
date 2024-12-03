@@ -73,3 +73,14 @@ def format_concentration(concentration, precision=6):
     if isinstance(concentration, pd.DataFrame):
         concentration = concentration['concentration'].iloc[0]
     return f"{float(concentration):.{precision}g}"
+
+def get_state_from_index(selected_model, index, n_value):
+        if selected_model == 'kds_saxs_mon_oligomer':
+            return 'monomer' if index == 0 else 'oligomer'
+        else:
+            if index == 0:
+                return 'receptor'
+            elif index == n_value + 1:
+                return 'ligand'
+            else:
+                return f'receptor_ligand_{index}'
