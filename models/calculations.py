@@ -70,7 +70,13 @@ class MonomerOligomerCalculation:
                     fit_file = os.path.join(fits_dir, f"fit_{format_concentration(concentration)}_{Kd}.fit")
                     log_file = os.path.join(logs_dir, f"oligomer_{format_concentration(concentration)}_{Kd}.log")
                     
-                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un=2"
+                    # Load first column (q values) from theoretical file
+                    theo_data = np.loadtxt(theoretical_file)
+                    q_values = theo_data[:, 0]
+                    #check if it is in nm^-1 or A^-1
+                    unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
+                    
+                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                     
                     chi_squared = extract_chi_squared(log_file)
@@ -180,8 +186,13 @@ class ProteinBindingCalculation:
                     # Save theoretical intensity file in session directory
                     np.savetxt(theoretical_file, theoretical_saxs)
 
-                    # Run ATSAS oligomer with session directory paths
-                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un=2"
+                    # Load first column (q values) from theoretical file
+                    theo_data = np.loadtxt(theoretical_file)
+                    q_values = theo_data[:, 0]
+                    #check if it is in nm^-1 or A^-1
+                    unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
+                    
+                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                     
                     chi_squared = extract_chi_squared(log_file)
