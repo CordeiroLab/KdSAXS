@@ -49,7 +49,8 @@ CONCENTRATION_RANGE = (0.1, 12000)
 CONCENTRATION_POINTS = 50
 
 # ATSAS configuration
-ATSAS_PATH = "/Users/tiago/ATSAS-3.2.1-1/bin/"
+#ATSAS_PATH = "/home/kdsaxs/ATSAS-3.2.1-1/bin/oligomer"  #for production server
+ATSAS_PATH = "/Users/tiago/ATSAS-3.2.1-1/bin/"  #for local testing
 
 CRYSOL_COMMAND = "crysol"  # Command name
 CRYSOL_PARAMS = {
