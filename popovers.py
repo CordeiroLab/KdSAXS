@@ -14,7 +14,7 @@ formulas = {
     $$
     
     $$
-    K_d = \\frac{[M]^n}{[oligomer]}
+    K_D = \\frac{[M]^n}{[oligomer]}
     $$
     
     $$
@@ -34,11 +34,11 @@ formulas = {
     $$
     
     $$
-    K_{d,j} = jK_d / (n - j + 1), \quad j \in \mathbb{Z}, \, j > 0 \quad ,
+    K_{D,j} = jK_d / (n - j + 1), \quad j \in \mathbb{Z}, \, j > 0 \quad ,
     $$
     
     $$
-    K_{d,j} = \\frac{[R]_{j-1}[L_{free}]}{[R]_j} \quad  \quad 
+    K_{D,j} = \\frac{[R]_{j-1}[L_{free}]}{[R]_j} \quad  \quad 
     $$
     
     $$

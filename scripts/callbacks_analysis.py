@@ -294,6 +294,8 @@ def register_callbacks_analysis(app, get_session_dir):
                 raise PreventUpdate
 
             clicked_kd = click_data['points'][0]['x']
+            # Update stored data with selected Kd
+            stored_data['selected_kd'] = clicked_kd
             concentration_range = np.linspace(conc_min, conc_max, conc_points)
             experimental_concentrations = stored_data.get('experimental_concentrations', [])
             concentration_colors = stored_data.get('concentration_colors', {})
@@ -308,7 +310,7 @@ def register_callbacks_analysis(app, get_session_dir):
                                                  session['session_dir'], clicked_kd, 
                                                  stored_data['chi2_values'], units=units)
             
-            return False, '', dash.no_update, fraction_plot, saxs_fit_plots, dash.no_update
+            return False, '', dash.no_update, fraction_plot, saxs_fit_plots, stored_data
 
         return False, '', dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -384,8 +386,10 @@ def register_callbacks_analysis(app, get_session_dir):
         button_id = ctx.triggered[0]['prop_id']
         index = json.loads(button_id.split('.')[0])['index']
         
-        # Get the fit data from the fits directory
-        fit_file = os.path.join(session_dir, 'fits', f'fit_{format_concentration(stored_data["experimental_concentrations"][index])}_{stored_data["best_kd"]}.fit')
+        concentration = stored_data["experimental_concentrations"][index]
+        kd = stored_data.get("selected_kd", stored_data["best_kd"])
+        
+        fit_file = os.path.join(session_dir, 'fits', f'fit_{format_concentration(concentration)}_{kd}.fit')
         fit_data = pd.read_csv(fit_file, sep='\s+', skiprows=1, names=['s', 'Iexp', 'sigma', 'Ifit'])
         
         return dcc.send_data_frame(fit_data.to_csv, f"saxs_fit_{index+1}.csv", index=False)
@@ -410,7 +414,7 @@ def register_callbacks_analysis(app, get_session_dir):
         # Get the concentration and color for this index
         concentration = stored_data["experimental_concentrations"][index]
         color = stored_data["concentration_colors"][concentration]
-        kd = stored_data["best_kd"]
+        kd = stored_data.get("selected_kd", stored_data["best_kd"])
         chi2 = stored_data["chi2_values"][index]
         
         # Get the fit data from the fits directory
