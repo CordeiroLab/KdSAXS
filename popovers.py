@@ -26,19 +26,19 @@ formulas = {
     Mass balance equations:
 
     $$
-    R_{total} = \sum_{j=0}^{n} R_n \quad ,
+    R_{total} = \sum_{j=0}^{n} R_j \quad ,
     $$
     
     $$
-    L_{total} = L_{free} + \sum_{j=1}^{n} j \cdot R_n \quad ,
+    L_{total} = L_{free} + \sum_{j=1}^{n} j \cdot R_j \quad ,
     $$
     
     $$
-    K_{d,n} = nK_d / (2n+1), \quad n \in \mathbb{Z}, \, n > 0 \quad ,
+    K_{d,j} = jK_d / (n - j + 1), \quad j \in \mathbb{Z}, \, j > 0 \quad ,
     $$
     
     $$
-    K_{d,n} = \\frac{[R]_{n-1}[L]}{[R]_n} \quad  \quad 
+    K_{d,j} = \\frac{[R]_{j-1}[L_{free}]}{[R]_j} \quad  \quad 
     $$
     
     $$
