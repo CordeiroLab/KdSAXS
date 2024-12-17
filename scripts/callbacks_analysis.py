@@ -19,9 +19,10 @@ from config import ATSAS_PATH
 import json
 from flask import session
 from scripts.utils import get_state_from_index
+from config import MAX_KD_POINTS, MAX_CONCENTRATION_POINTS
 
 
-def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration):
+def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, kd_points, conc_points):
     errors = []
     if not selected_model:
         errors.append("No model selected.")
@@ -35,6 +36,13 @@ def validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_
         errors.append("Invalid Kd range.")
     if selected_model == 'kds_saxs_oligomer_fitting' and receptor_concentration is None:
         errors.append("Receptor concentration is required for the selected model.")
+    
+    # Add validation for maximum points
+    if kd_points > MAX_KD_POINTS:
+        errors.append(f"Number of Kd points cannot exceed {MAX_KD_POINTS}")
+    if conc_points > MAX_CONCENTRATION_POINTS:
+        errors.append(f"Number of concentration points cannot exceed {MAX_CONCENTRATION_POINTS}")
+        
     return errors
 
 def process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, session_dir, kd_points):
@@ -253,9 +261,9 @@ def register_callbacks_analysis(app, get_session_dir):
 
             kd_range = (kd_min, kd_max)
             concentration_range = np.linspace(conc_min, conc_max, conc_points)
-            input_errors = validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration)
+            input_errors = validate_inputs(selected_model, n_value, upload_container, theoretical_saxs_uploads, kd_range, receptor_concentration, kd_points, conc_points)
             if input_errors:
-                return True, '\n'.join(input_errors), dash.no_update, dash.no_update, dash.no_update, dash.no_update
+                return True, html.Div([html.P(error) for error in input_errors], className='message-error'), dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
             try:
                 results, concentration_colors = process_saxs_data(selected_model, n_value, upload_container, theoretical_saxs_uploads, 

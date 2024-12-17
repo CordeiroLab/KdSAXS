@@ -66,8 +66,8 @@ def create_saxs_fit_plots(results_or_concentrations, concentration_colors, sessi
     if isinstance(results_or_concentrations, list):
         # Case when clicking on chi² plot
         experimental_concentrations = results_or_concentrations
-        # Only try to read logs if we have a valid kd value
-        if kd is not None and chi2_values is None:
+        # Get chi² values for clicked Kd from log files
+        if kd is not None:
             chi2_values = []
             for concentration in experimental_concentrations:
                 log_file = os.path.join(session_dir, 'logs', f"oligomer_{format_concentration(concentration)}_{kd}.log")

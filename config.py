@@ -64,3 +64,7 @@ LOG_DIRECTORY = os.path.join(BASE_DIR, "output_data", "logs")
 # Add to config.py
 MAX_PDB_UPLOADS = 20
 MAX_PDB_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+
+# Add maximum points limits
+MAX_KD_POINTS = 100
+MAX_CONCENTRATION_POINTS = 100

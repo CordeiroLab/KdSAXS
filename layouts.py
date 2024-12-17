@@ -199,7 +199,7 @@ def create_instructions():
                 html.Sub("D"),
                 html.Span(") from SAXS experiments.")
             ]),
-            html.Li("Upload your SAXS profiles or PDB files, set parameters, and visualize results with interactive plots and downloadable CSV and PDF files."),
+            html.Li("Upload your SAXS profiles or PDB files (e.g., MD, NMR, X-ray or Alphafold models), set parameters, and visualize results with interactive plots and downloadable CSV and PDF files."),
             html.Li(["When uploading PDB files, ",
                 html.Span("K"),
                 html.Sub("D"),

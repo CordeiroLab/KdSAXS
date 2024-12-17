@@ -34,7 +34,7 @@ formulas = {
     $$
     
     $$
-    K_{D,j} = jK_d / (n - j + 1), \quad j \in \mathbb{Z}, \, j > 0 \quad ,
+    K_{D,j} = jK_d / (n - j + 1), \quad j \in \mathbb{Z}, \, j \geq 0 \quad ,
     $$
     
     $$
