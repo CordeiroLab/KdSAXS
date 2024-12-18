@@ -77,7 +77,7 @@ class MonomerOligomerCalculation:
                     unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
                     
                     cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
-                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
                     
                     chi_squared = extract_chi_squared(log_file)
                     chi_squared_values.append((Kd, concentration, monomer_fraction, oligomer_fraction, chi_squared))
@@ -193,7 +193,7 @@ class ProteinBindingCalculation:
                     unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
                     
                     cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
-                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
                     
                     chi_squared = extract_chi_squared(log_file)
 
