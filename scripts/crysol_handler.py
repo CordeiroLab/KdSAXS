@@ -43,22 +43,26 @@ class CrysolHandler:
             if output_prefix:
                 cmd.extend(['-p', output_prefix])
             
-            # Run CRYSOL
+            # Run CRYSOL with timeout
             result = subprocess.run(cmd, 
                                  capture_output=True, 
-                                 text=True, 
+                                 text=True,
+                                 timeout=60,  # 60 second timeout per PDB
                                  cwd=os.path.dirname(pdb_file))
             
             if result.returncode != 0:
                 raise RuntimeError(f"CRYSOL failed: {result.stderr}")
             
-            # Get output intensity file (ends with 00.int)
+            # Get output intensity file
             output_file = pdb_file.rsplit('.', 1)[0] + ".int"
             if not os.path.exists(output_file):
                 raise FileNotFoundError(f"CRYSOL output file not found: {output_file}")
             
             return output_file
             
+        except subprocess.TimeoutExpired:
+            logger.error(f"CRYSOL timed out processing {pdb_file}")
+            raise RuntimeError(f"CRYSOL processing timed out for {pdb_file}")
         except Exception as e:
             logger.error(f"Error running CRYSOL on {pdb_file}: {str(e)}")
             raise
