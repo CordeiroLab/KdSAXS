@@ -12,14 +12,23 @@ import plotly.express as px
 from scripts.utils import format_concentration, save_file, get_session_path
 from models.calculations import extract_chi_squared
 from scripts.error_handling import logger
+from models.curve_analysis import LCurveAnalysis
 
 def create_chi_squared_plot(results, concentration_colors, units='µM'):
     if results:
         chi_squared_values = pd.concat(results)
         avg_chi_squared = chi_squared_values.groupby('kd')['chi2'].mean().reset_index()
+        
+        
+        # Perform L-curve analysis on average chi-squared values
+        l_curve_result = LCurveAnalysis.analyze(
+            avg_chi_squared['kd'].values,
+            avg_chi_squared['chi2'].values
+        )
 
         fig = go.Figure()
 
+        # Plot individual concentration curves
         for concentration in chi_squared_values['concentration'].unique():
             df_subset = chi_squared_values[chi_squared_values['concentration'] == concentration]
             fig.add_trace(go.Scatter(
@@ -27,9 +36,10 @@ def create_chi_squared_plot(results, concentration_colors, units='µM'):
                 y=df_subset['chi2'], 
                 mode='lines+markers',
                 name=f'{concentration}',
-                line=dict(color=concentration_colors[concentration])  # concentration is already formatted
+                line=dict(color=concentration_colors[concentration])
             ))
 
+        # Plot average curve
         fig.add_trace(go.Scatter(
             x=avg_chi_squared['kd'],
             y=avg_chi_squared['chi2'],
@@ -38,9 +48,22 @@ def create_chi_squared_plot(results, concentration_colors, units='µM'):
             line=dict(color='black', width=2, dash='dash')
         ))
 
+        # Add star marker at point of maximum curvature
+        y_value = 10 ** np.interp(np.log10(l_curve_result.optimal_kd), 
+                                 l_curve_result.x_smooth,
+                                 l_curve_result.y_smooth)
+        
+        fig.add_trace(go.Scatter(
+            x=[l_curve_result.optimal_kd],
+            y=[y_value],
+            mode='markers',
+            marker=dict(color='red', size=12, symbol='star'),
+            showlegend=False,
+            hoverinfo='skip'
+        ))
+
         fig.update_xaxes(type="log")
         fig.update_layout(
-            legend_title=f'Concentration ({units})',
             xaxis_title=f'Kd ({units})',
             yaxis_title='χ²',
             showlegend=True,
@@ -48,8 +71,25 @@ def create_chi_squared_plot(results, concentration_colors, units='µM'):
             height=400,
             width=650,
             font=dict(size=16),
+            # Create two legend groups
+            legend=dict(
+                title=f'Concentration ({units})',
+                tracegroupgap=5
+            ),
+            # Add text annotation with star symbol for L-curve result
+            annotations=[
+                dict(
+                    text=f'<span style="font-size: 14px;"><span style="color: red;">★</span> L-curve analysis estimation <br> <b>Kd = {l_curve_result.optimal_kd:.2f} {units}</b></span>',
+                    xref="paper",
+                    yref="paper",
+                    x=0.01,
+                    y=0.99,
+                    showarrow=False,
+                    bgcolor="rgba(255, 255, 255, 0.5)"
+                )
+            ],
             title={
-                'text': "χ² vs Kd ",
+                'text': "χ² vs Kd",
                 'x': 0.5,
                 'xanchor': 'center',
                 'yanchor': 'top',
@@ -254,7 +294,16 @@ def create_fraction_plot(kd, n_value, concentration_range, selected_model, recep
 
     return fig
 
-def create_empty_fraction_plot(message="Please click on a K<sub>D</sub> value to the left. <br> The estimated molecular fractions will be displayed here, <br> together with the corresponding SAXS data fits below. <br> <br> The K<sub>D</sub> with the lowest χ², or the plot's elbow region when <br> no clear minimum is found, corresponds to the most likely K<sub>D</sub>."):
+def create_empty_fraction_plot(message="""Please click on a K<sub>D</sub> value to the left. <br>
+The estimated molecular fractions will be displayed here, <br>
+together with the corresponding SAXS data fits below. <br><br>
+
+The K<sub>D</sub> with the lowest χ², or the plot's elbow region when <br>
+no clear minimum is found, corresponds to the most likely K<sub>D</sub>. <br>
+A maximum curvature K<sub>D</sub> estimate is provided in the legend <br>
+with a red star marker. A visual inspection of the plot <br> 
+is recommended to ensure the correct K<sub>D</sub> is selected <br>
+when no clear minimum or elbow region are found."""):
     fig = go.Figure()
     fig.update_layout(
         showlegend=False,

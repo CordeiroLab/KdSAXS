@@ -1,9 +1,12 @@
-import os
 import base64
-import pandas as pd
-import plotly.graph_objects as go
+import os
 
-def save_file(name, content, directory, subdir=None, file_type=None, model=None, state=None):
+import pandas as pd
+
+
+def save_file(
+    name, content, directory, subdir=None, file_type=None, model=None, state=None
+):
     """
     Decode and store a file uploaded with Plotly Dash.
     Args:
@@ -15,35 +18,37 @@ def save_file(name, content, directory, subdir=None, file_type=None, model=None,
         model: model type ('kds_saxs_mon_oligomer', 'kds_saxs_oligomer_fitting')
         state: state identifier ('monomer', 'oligomer', 'receptor', etc.)
     """
-    if file_type == 'pdb':
-        if model == 'kds_saxs_mon_oligomer':
+    if file_type == "pdb":
+        if model == "kds_saxs_mon_oligomer":
             # Handle monomer/oligomer states
-            state_dir = 'monomer' if state == 'monomer' else 'oligomer'
+            state_dir = "monomer" if state == "monomer" else "oligomer"
             save_dir = os.path.join(directory, "pdbs", state_dir)
         else:
             # Handle protein binding states
-            if state == 'receptor':
+            if state == "receptor":
                 save_dir = os.path.join(directory, "pdbs", "receptor")
-            elif state == 'ligand':
+            elif state == "ligand":
                 save_dir = os.path.join(directory, "pdbs", "ligand")
             else:
                 save_dir = os.path.join(directory, "pdbs", "receptor_ligand")
     else:
         save_dir = os.path.join(directory, subdir) if subdir else directory
-        
+
     os.makedirs(save_dir, exist_ok=True)
-    
+
     data = content.encode("utf8").split(b";base64,")[1]
     file_path = os.path.join(save_dir, name)
     with open(file_path, "wb") as fp:
         fp.write(base64.decodebytes(data))
     return file_path
 
+
 def get_session_path(session_dir, subdir):
     """Get full path for a subdirectory in session directory"""
     path = os.path.join(session_dir, subdir)
     os.makedirs(path, exist_ok=True)
     return path
+
 
 def uploaded_files(directory):
     """List the files in the upload directory."""
@@ -54,12 +59,14 @@ def uploaded_files(directory):
             files.append(filename)
     return files
 
+
 def truncate_filename(filename, max_length=50):
     if len(filename) <= max_length:
         return filename
     name, extension = os.path.splitext(filename)
-    truncated = name[:max_length-3-len(extension)] + '...' + extension
+    truncated = name[: max_length - 3 - len(extension)] + "..." + extension
     return truncated
+
 
 def format_concentration(concentration, precision=6):
     """
@@ -71,16 +78,17 @@ def format_concentration(concentration, precision=6):
         str: Formatted concentration string
     """
     if isinstance(concentration, pd.DataFrame):
-        concentration = concentration['concentration'].iloc[0]
+        concentration = concentration["concentration"].iloc[0]
     return f"{float(concentration):.{precision}g}"
 
+
 def get_state_from_index(selected_model, index, n_value):
-        if selected_model == 'kds_saxs_mon_oligomer':
-            return 'monomer' if index == 0 else 'oligomer'
+    if selected_model == "kds_saxs_mon_oligomer":
+        return "monomer" if index == 0 else "oligomer"
+    else:
+        if index == 0:
+            return "receptor"
+        elif index == n_value + 1:
+            return "ligand"
         else:
-            if index == 0:
-                return 'receptor'
-            elif index == n_value + 1:
-                return 'ligand'
-            else:
-                return f'receptor_ligand_{index}'
+            return f"receptor_ligand_{index}"

@@ -9,6 +9,7 @@ ngrok_monitor*
 # Ignore folder and all its contents
 /output_data/
 /logs/
+/.idea/
 
 # Ignore Python cache folders
 __pycache__/

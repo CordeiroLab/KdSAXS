@@ -27,9 +27,24 @@ def create_model_selection():
 def create_saxs_upload_section():
     return html.Div([
         html.Div([
-            "Upload experimental SAXS profiles and concentrations:",
-            html.Sup(html.I(className="fas fa-info-circle", id="exp-saxs-info", style={'marginLeft': '5px'}))
-        ], className="centered-bold-text"),
+            html.Div([
+                "Upload experimental SAXS profiles and concentrations:",
+                html.Sup(html.I(className="fas fa-info-circle", id="exp-saxs-info", style={'marginLeft': '5px'}))
+            ], className="centered-bold-text", style={'flex': '1'}),
+            
+            # Reset button aligned with title
+            html.Button([
+                html.I(className="fas fa-trash-alt", style={'marginRight': '5px'}),
+                "Reset"
+            ],
+            id='delete-all-exp-saxs',
+            className='btn btn-danger btn-sm')
+        ], style={
+            'display': 'flex',
+            'alignItems': 'center',
+            'marginBottom': '20px',
+            'justifyContent': 'space-between'
+        }),
         
         html.Div([
             html.Label("Concentration units: ", 
@@ -48,6 +63,24 @@ def create_saxs_upload_section():
                 ],
                 value='µM',
                 style={'width': '100px'}
+            ),
+            html.Label("Angular units: ", 
+                      style={
+                          'marginLeft': '20px',
+                          'marginRight': '10px',
+                          'display': 'flex',
+                          'alignItems': 'center',
+                          'height': '38px'
+                      }),
+            dcc.Dropdown(
+                id='q-units',
+                options=[
+                    {'label': '1/Å', 'value': '1'},
+                    {'label': '1/nm', 'value': '2'}
+                ],
+                value='2',
+                style={'width': '100px'},
+                clearable=False
             )
         ], style={
             'marginBottom': '20px',
@@ -79,7 +112,7 @@ def create_saxs_upload_section():
                     step=0.1,
                     className="input-style",
                     style={'flex': '1'}
-                )
+                ),
             ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'}),
             html.Div([
                 html.Div([
@@ -103,7 +136,7 @@ def create_saxs_upload_section():
                     step=0.1,
                     className="input-style",
                     style={'flex': '1'}
-                )
+                ),
             ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '10px'})
         ]),
         html.Button('Add another SAXS profile', id='add-saxs-button', n_clicks=0, className='dash-button'),
@@ -273,7 +306,7 @@ def create_main_layout():
             html.H1([
                 "K",
                 html.Sub("D"),
-                "SAXS - analysing binding equilibria with SAXS data using ensemble models"
+                "SAXS - analysing binding equilibria with SAXS data using explicit models"
             ], className="text-center my-4"),
             dbc.Tabs([
                 dbc.Tab(create_info_tab(), label="1. Instructions"),

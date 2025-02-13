@@ -1,10 +1,12 @@
 import os
 import shutil
-from datetime import datetime, timedelta
 import threading
 import time
+from datetime import datetime, timedelta
+
 from config import BASE_DIR
 from scripts.error_handling import logger
+
 
 def cleanup_sessions(days_to_keep=2):
     """

@@ -43,7 +43,7 @@ class MonomerOligomerCalculation:
 
 
     @staticmethod
-    def calculate(exp_saxs, mon_avg_int, dim_avg_int, concentration, n, kd_range, kd_points, session_dir):
+    def calculate(exp_saxs, mon_avg_int, dim_avg_int, concentration, n, kd_range, kd_points, session_dir, q_units):
         try:
             Kd_values = np.round(np.geomspace(kd_range[0], kd_range[1], num=kd_points), decimals=2)
             
@@ -70,13 +70,8 @@ class MonomerOligomerCalculation:
                     fit_file = os.path.join(fits_dir, f"fit_{format_concentration(concentration)}_{Kd}.fit")
                     log_file = os.path.join(logs_dir, f"oligomer_{format_concentration(concentration)}_{Kd}.log")
                     
-                    # Load first column (q values) from theoretical file
-                    theo_data = np.loadtxt(theoretical_file)
-                    q_values = theo_data[:, 0]
-                    #check if it is in nm^-1 or A^-1
-                    unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
-                    
-                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un={q_units}"
+                    #print(cmd)
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
                     
                     chi_squared = extract_chi_squared(log_file)
@@ -147,7 +142,7 @@ class ProteinBindingCalculation:
         return pd.DataFrame(fractions, columns=columns)
 
     @staticmethod
-    def calculate(exp_saxs, theoretical_saxs_files, receptor_concentration, ligand_concentration, n, kd_range, kd_points, session_dir):
+    def calculate(exp_saxs, theoretical_saxs_files, receptor_concentration, ligand_concentration, n, kd_range, kd_points, session_dir, q_units):
         try:
             if receptor_concentration is None:
                 raise ValueError("Receptor concentration cannot be None")
@@ -185,14 +180,8 @@ class ProteinBindingCalculation:
 
                     # Save theoretical intensity file in session directory
                     np.savetxt(theoretical_file, theoretical_saxs)
-
-                    # Load first column (q values) from theoretical file
-                    theo_data = np.loadtxt(theoretical_file)
-                    q_values = theo_data[:, 0]
-                    #check if it is in nm^-1 or A^-1
-                    unit_flag = "-un=1" if np.any(q_values > 1) else "-un=2"
                     
-                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws {unit_flag}"
+                    cmd = f"{ATSAS_PATH}/oligomer -ff {theoretical_file} {exp_saxs} --fit={fit_file} --out={log_file} -cst -ws -un={q_units}"
                     result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
                     
                     chi_squared = extract_chi_squared(log_file)
