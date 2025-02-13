@@ -452,7 +452,7 @@ def register_callbacks_upload(app):
 
             
             
-            mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_mon_ph7.int')     #change here
+            '''mon_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_mon_ph7.int')     #change here
             with open(mon_path, 'rb') as f:
                 mon_content = f.read()
             mon_encoded = base64.b64encode(mon_content).decode()
@@ -460,7 +460,7 @@ def register_callbacks_upload(app):
             dim_path = os.path.join('/Users/tiago/working_PAPERS/SAXS_oligo_Kd/used_saxs_data/dsblab/ph7/theoretical_saxs','avg_dim_ph7.int')     #change here
             with open(dim_path, 'rb') as f:
                 dim_content = f.read()
-            dim_encoded = base64.b64encode(dim_content).decode()
+            dim_encoded = base64.b64encode(dim_content).decode()'''
             
 
 
