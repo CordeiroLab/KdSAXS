@@ -2,7 +2,7 @@
   <img src="assets/Logo_kdSAXS_2a.png" width="30%"/>
 </p>
 
-<h1 align="center">K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using ensemble models</h1>
+<h1 align="center">K<sub>D</sub>SAXS: A tool to analyse binding equilibria with SAXS data using explicit models</h1>
 
 <p align="center">
 <img src="assets/KdSAXS.png" width="80%"><img src="assets/KdSAXS_2.png" width="80%"/>
@@ -173,7 +173,7 @@ A general overview of KdSAXS, descriptions of employed methods and applications 
 
 If you use KdSAXS, please cite its original publication:
 
-    PUB
+Gomes, T., Ruiz, L., Martin-Malpartida, P., Bernadó, P., Baptista, A.M., Macias, M., & Cordeiro, T.N. (2025). KDSAXS: A tool for Analyzing Binding Equilibria with SAXS Data using Explicit Models. *Journal of Molecular Biology*, 169103. https://doi.org/10.1016/j.jmb.2025.169103
 
 
 # 🤝 Acknowledgements
